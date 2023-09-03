@@ -5,7 +5,7 @@
 #include"include/util.h"
 #include<arpa/inet.h>
 
-const int BUFSIZE = 1024;
+const int BUFSIZE = 2048;
 
 int main() {
     int clnt_fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -19,15 +19,17 @@ int main() {
     printf("connection successful!!!\n");
 
     char buf[BUFSIZE];
-    bzero(buf, sizeof(buf));
-    scanf("%s", buf);
-    int write_byte = write(clnt_fd, buf, sizeof(buf));
-    errif(write_byte == -1, "transfor message error");
-    
-    bzero(buf, sizeof(buf));
-    int read_byte = read(clnt_fd, buf, sizeof(buf));
-    errif(write_byte == -1, "read message error");
-    printf("recive from [%s:%d]: %s\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port), buf);
+    while(true) {
+        bzero(buf, sizeof(buf));
+        scanf("%s", buf);
+        int write_byte = write(clnt_fd, buf, sizeof(buf));
+        errif(write_byte == -1, "transfor message error");
+        
+        bzero(buf, sizeof(buf));
+        int read_byte = read(clnt_fd, buf, sizeof(buf));
+        errif(write_byte == -1, "read message error");
+        printf("recive from [%s:%d]: %s\n", inet_ntoa(clnt_addr.sin_addr), ntohs(clnt_addr.sin_port), buf);
+    }
     
 
 }

@@ -1,5 +1,7 @@
 #include "../include/Socket.h"
 #include "../include/InetAddress.h"
+#include <unistd.h>
+#include <fcntl.h>
 
 Socket::Socket() : fd(-1) {
     fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -10,6 +12,13 @@ Socket::Socket(int _fd) : fd(_fd) {
     errif(fd == -1, "socket create error");
 }
 
+Socket::~Socket() {
+    if(fd != -1) {
+        close(fd);
+        fd = -1;
+    }
+}
+
 void Socket::bind(InetAddress& _addr) {
     struct sockaddr_in serv_addr;
     serv_addr = _addr.getAddr();
@@ -18,6 +27,14 @@ void Socket::bind(InetAddress& _addr) {
 
 void Socket::listen() {
     errif(::listen(fd, SOMAXCONN) == -1, "socket listen error");
+}
+
+int Socket::getFd() {
+    return fd;
+}
+
+void Socket::setnonblocking() {
+    fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
 }
 
 int Socket::accept(InetAddress& _addr) {
