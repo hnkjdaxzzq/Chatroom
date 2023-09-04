@@ -1,6 +1,7 @@
 #include "../include/Connection.h"
 #include "../include/Socket.h"
 #include "../include/Channel.h"
+#include "../include/Rio.h"
 #include <unistd.h>
 #include <cstring>
 
@@ -8,6 +9,7 @@ const int READ_BUFFER = 2048;
 
 Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr) {
     channel = new Channel(loop, sock->getFd());
+    rio = new Rio(sock->getFd());
     std::function<void()> cb = std::bind(&Connection::echo, this, sock->getFd());
     channel->setCallback(cb);
     channel->enableReading();
@@ -16,16 +18,17 @@ Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_soc
 Connection::~Connection() {
     delete channel;
     delete sock;
+    delete rio;
 }
 
 void Connection::echo(int sockfd) {
     char buf[READ_BUFFER];
     while(true) {    //由于使用非阻塞IO，读取客户端buffer，一次读取buf大小数据，直到全部读取完毕
         bzero(&buf, sizeof(buf));
-        ssize_t bytes_read = read(sockfd, buf, sizeof(buf));
+        ssize_t bytes_read = rio->rio_readn(buf, sizeof(buf));
         if(bytes_read > 0){
             printf("message from client fd %d: %s\n", sockfd, buf);
-            write(sockfd, buf, sizeof(buf));
+            rio->rio_writen(buf, sizeof(buf));
         } else if(bytes_read == -1 && errno == EINTR){  //客户端正常中断、继续读取
             printf("continue reading");
             continue;
