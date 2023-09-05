@@ -25,7 +25,7 @@ void Connection::echo(int sockfd) {
     char buf[READ_BUFFER];
     while(true) {    //由于使用非阻塞IO，读取客户端buffer，一次读取buf大小数据，直到全部读取完毕
         bzero(&buf, sizeof(buf));
-        ssize_t bytes_read = rio->rio_readn(buf, sizeof(buf));
+        ssize_t bytes_read = rio->rio_readnb(buf, sizeof(buf));
         if(bytes_read > 0){
             printf("message from client fd %d: %s\n", sockfd, buf);
             rio->rio_writen(buf, sizeof(buf));

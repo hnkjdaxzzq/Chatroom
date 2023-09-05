@@ -3,6 +3,7 @@
 #include<errno.h>
 #include<cstring>
 #include<unistd.h>
+#include<cstdio>
 
 
 Rio::Rio(int _fd) : fd(_fd) {
@@ -115,7 +116,7 @@ ssize_t Rio::rio_readlineb(void *usrbuf, size_t maxlen) {
 
 ssize_t Rio::rio_readnb(void *usrbuf, size_t n) {
     size_t nleft = n;
-    size_t nread;
+    ssize_t nread;
     char *bufp = (char*)usrbuf;
 
     while( nleft > 0) {
