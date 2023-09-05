@@ -39,7 +39,8 @@ void Socket::setnonblocking() {
 
 int Socket::accept(InetAddress& _addr) {
     struct sockaddr_in clnt_addr;
-    socklen_t clnt_len;
+    socklen_t clnt_len = sizeof(clnt_addr);
+    bzero(&clnt_addr, sizeof(clnt_addr));
     int clntFd = ::accept(fd, (sockaddr*)&clnt_addr, &clnt_len);
     errif(clntFd == -1, "socket accept error");
     _addr.setAddr(clnt_addr);
