@@ -11,8 +11,9 @@ Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_soc
     channel = new Channel(loop, sock->getFd());
     rio = new Rio(sock->getFd());
     std::function<void()> cb = std::bind(&Connection::echo, this, sock->getFd());
-    channel->setCallback(cb);
+    channel->setReadCallback(cb);
     channel->enableReading();
+    channel->useET();
 }
 
 Connection::~Connection() {
