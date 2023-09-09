@@ -26,7 +26,7 @@ ssize_t Rio::rio_readn(void *usrbuf, size_t n) {
 
     while(nleft > 0) {
         if((nread = read(fd, bufp, nleft)) < 0) {
-            if(errno = EINTR) /* Interrupted by sig handler return */
+            if(errno == EINTR) /* Interrupted by sig handler return */
                 nread = 0;    /* and call read() again*/
             else 
                 return -1;    /* errno set by read */

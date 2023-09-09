@@ -20,38 +20,10 @@ public:
     ~ThreadPool();
 };
 
-ThreadPool::ThreadPool(size_t threads) : stop(false) {
-    // 根据线程数创建多个线程
-    for(auto i = 0; i < threads; ++i) {
-        workers.emplace_back([this]() {
-            while(true) {  // 工作线程死循环，不断查询任务队列并取出任务执行
-                std::function<void()> task;
-
-                {
-                    std::unique_lock<std::mutex> lock(this->queue_mutex);
-                    this->condition.wait(lock, 
-                                        [this]() {
-                                            return this->stop || !this->tasks.empty();
-                                        } 
-                    );
-
-                    if(this->stop && this->tasks.empty())
-                        return;
-                    task = std::move(this->tasks.front());
-                    this->tasks.pop();
-                }
-                task();
-
-            }
-        }
-        
-        );
-    }
-}
 
 template<typename F, typename...Args>
 auto ThreadPool::enqueue(F&& f, Args&& ...args) {
-    using return_type = std::invoke_result_t<F, Args...>;
+    using return_type = decltype(f(args...));
     auto task = std::make_shared<std::packaged_task<return_type()>> (
         std::bind(std::forward<F>(f), std::forward<Args>(args)...)
     );
@@ -67,14 +39,4 @@ auto ThreadPool::enqueue(F&& f, Args&& ...args) {
     }
     condition.notify_one();
     return res;
-}
-
-ThreadPool::~ThreadPool() {
-    {
-        std::unique_lock<std::mutex> lock(queue_mutex);
-        stop = true;
-    }
-    condition.notify_all();
-    for(std::thread &worker : workers)
-        worker.join();
 }
