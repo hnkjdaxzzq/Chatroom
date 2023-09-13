@@ -1,5 +1,5 @@
-#include "../include/Rio.h"
-#include "../include/Riobuf.h"
+#include "Rio.h"
+#include "Riobuf.h"
 #include<errno.h>
 #include<cstring>
 #include<unistd.h>

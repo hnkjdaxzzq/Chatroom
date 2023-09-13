@@ -1,7 +1,7 @@
-#include "../include/Acceptor.h"
-#include "../include/Socket.h"
-#include "../include/InetAddress.h"
-#include "../include/Channel.h"
+#include "Acceptor.h"
+#include "Socket.h"
+#include "InetAddress.h"
+#include "Channel.h"
 
 Acceptor::Acceptor(EventLoop *_loop) : loop(_loop), sock(nullptr), acceptChannel(nullptr) {
     sock = new Socket();

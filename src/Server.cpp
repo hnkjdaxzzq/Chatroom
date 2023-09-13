@@ -1,8 +1,8 @@
-#include "../include/Server.h"
-#include "../include/Socket.h"
-#include "../include/Acceptor.h"
-#include "../include/Connection.h"
-#include "../include/EventLoop.h"
+#include "Server.h"
+#include "Socket.h"
+#include "Acceptor.h"
+#include "Connection.h"
+#include "EventLoop.h"
 #include <functional>
 
 Server::Server(EventLoop *_loop) : mainReator(_loop), acceptor(nullptr) {
