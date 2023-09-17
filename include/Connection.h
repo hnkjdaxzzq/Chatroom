@@ -1,6 +1,8 @@
 #pragma once
+#include <cstddef>
 #include <functional>
 #include <Buffer.h>
+#include <sys/types.h>
 
 class EventLoop;
 class Socket;
@@ -20,6 +22,11 @@ public:
     Connection(EventLoop *_loop, Socket *_sock);
     ~Connection();
 
+    ssize_t creadn(char *usrbuf, size_t n);
+    ssize_t creadnb(char *usrbuf, size_t n);
+    ssize_t cwriten(char *usrbuf, size_t n);
+
+    void Do(std::function<void()> task);
     void echo(int sockfd);
     void setDeleteConnectionCallback(std::function<void(Socket*)>);
 };

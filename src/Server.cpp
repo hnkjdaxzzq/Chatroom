@@ -5,11 +5,13 @@
 #include "EventLoop.h"
 #include <functional>
 
-Server::Server(EventLoop *_loop) : mainReator(_loop), acceptor(nullptr) {
+Server::Server(EventLoop *_loop, std::function<void()> contask) : mainReator(_loop), acceptor(nullptr), connectiontask(contask) {
     acceptor = new Acceptor(mainReator);
     std::function<void(Socket*)> cb = std::bind(&Server::newConnection, this, std::placeholders::_1);
     acceptor->setNewConnectionCallback(cb);
-
+    if(! connectiontask) {
+        printf("Don't set connection task, use default echo server\n");
+    }
     int size = std::thread::hardware_concurrency();
     thpool = new ThreadPool(size);
     for(auto i = 0; i < size; ++i) {
@@ -33,6 +35,11 @@ void Server::newConnection(Socket *sock) {
     std::function<void(Socket*)> cb = std::bind(&Server::deleteConnection, this, std::placeholders::_1);
     conn->setDeleteConnectionCallback(cb);
     connections[sock->getFd()] = conn;
+    conn->Do(connectiontask);
+}
+
+void Server::setConnectionTask(std::function<void ()> task) {
+    connectiontask = task;
 }
 
 void Server::deleteConnection(Socket *sock) {

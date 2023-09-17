@@ -3,6 +3,7 @@
 #include "Channel.h"
 #include "Rio.h"
 #include "util.h"
+#include <sys/types.h>
 #include <unistd.h>
 #include <cstring>
 #include <cstdio>
@@ -10,18 +11,40 @@
 const int READ_BUFFER = 2048;
 
 Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr) {
-    channel = new Channel(loop, sock->getFd());
+    // channel = new Channel(loop, sock->getFd());
     rio = new Rio(sock->getFd());
-    std::function<void()> cb = std::bind(&Connection::echo, this, sock->getFd());
-    channel->setReadCallback(cb);
-    channel->enableReading();
-    channel->useET();
+    // std::function<void()> cb = std::bind(&Connection::echo, this, sock->getFd());
+    // channel->setReadCallback(cb);
+    // channel->enableReading();
+    // channel->useET();
 }
 
 Connection::~Connection() {
     delete channel;
     delete sock;
     delete rio;
+}
+
+ssize_t Connection::creadn(char *usrbuf, size_t n) {
+    return rio->rio_readn(usrbuf, n);
+}
+
+ssize_t Connection::creadnb(char *usrbuf, size_t n) {
+    return rio->rio_readnb(usrbuf, n);
+}
+
+ssize_t Connection::cwriten(char *usrbuf, size_t n) {
+    return rio->rio_writen(usrbuf, n);
+}
+
+void Connection::Do(std::function<void ()> task) {
+    if (! task) {
+        task =  std::bind(&Connection::echo, this, sock->getFd());
+    }
+    channel = new Channel(loop, sock->getFd());
+    channel->setReadCallback(task);
+    channel->enableReading();
+    channel->useET();
 }
 
 void Connection::echo(int sockfd) {

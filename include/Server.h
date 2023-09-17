@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <map>
 #include <vector>
 #include "ThreadPool.h"
@@ -16,10 +17,12 @@ private:
     std::map<int, Connection*> connections;
     std::vector<EventLoop*> subReactors;
     ThreadPool *thpool;
+    std::function<void()> connectiontask;
 public:
-    Server(EventLoop*);
+    Server(EventLoop*, std::function<void()> contask = nullptr);
     ~Server();
 
+    void setConnectionTask(std::function<void()> task);
     void handleReadEvent(int);
     void newConnection(Socket *sock);
     void deleteConnection(Socket *sock);
