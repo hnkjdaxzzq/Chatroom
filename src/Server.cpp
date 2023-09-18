@@ -5,7 +5,7 @@
 #include "EventLoop.h"
 #include <functional>
 
-Server::Server(EventLoop *_loop, std::function<void()> contask) : mainReator(_loop), acceptor(nullptr), connectiontask(contask) {
+Server::Server(EventLoop *_loop, std::function<void(Connection*)> contask) : mainReator(_loop), acceptor(nullptr), connectiontask(contask) {
     acceptor = new Acceptor(mainReator);
     std::function<void(Socket*)> cb = std::bind(&Server::newConnection, this, std::placeholders::_1);
     acceptor->setNewConnectionCallback(cb);
@@ -38,7 +38,7 @@ void Server::newConnection(Socket *sock) {
     conn->Do(connectiontask);
 }
 
-void Server::setConnectionTask(std::function<void ()> task) {
+void Server::setConnectionTask(std::function<void (Connection*)> task) {
     connectiontask = task;
 }
 

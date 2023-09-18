@@ -3,6 +3,7 @@
 #include "Channel.h"
 #include "Rio.h"
 #include "util.h"
+#include <functional>
 #include <sys/types.h>
 #include <unistd.h>
 #include <cstring>
@@ -37,12 +38,13 @@ ssize_t Connection::cwriten(char *usrbuf, size_t n) {
     return rio->rio_writen(usrbuf, n);
 }
 
-void Connection::Do(std::function<void ()> task) {
+void Connection::Do(std::function<void (Connection*)> task) {
     if (! task) {
-        task =  std::bind(&Connection::echo, this, sock->getFd());
+        task = [&](Connection*) {echo(sock->getFd());};
     }
+    std::function<void()> callback = std::bind(task, this);
     channel = new Channel(loop, sock->getFd());
-    channel->setReadCallback(task);
+    channel->setReadCallback(callback);
     channel->enableReading();
     channel->useET();
 }

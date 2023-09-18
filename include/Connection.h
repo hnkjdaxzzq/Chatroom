@@ -26,7 +26,7 @@ public:
     ssize_t creadnb(char *usrbuf, size_t n);
     ssize_t cwriten(char *usrbuf, size_t n);
 
-    void Do(std::function<void()> task);
+    void Do(std::function<void(Connection*)> task);
     void echo(int sockfd);
     void setDeleteConnectionCallback(std::function<void(Socket*)>);
 };

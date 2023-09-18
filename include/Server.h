@@ -17,12 +17,12 @@ private:
     std::map<int, Connection*> connections;
     std::vector<EventLoop*> subReactors;
     ThreadPool *thpool;
-    std::function<void()> connectiontask;
+    std::function<void(Connection*)> connectiontask;
 public:
-    Server(EventLoop*, std::function<void()> contask = nullptr);
+    Server(EventLoop*, std::function<void(Connection*)> contask = nullptr);
     ~Server();
 
-    void setConnectionTask(std::function<void()> task);
+    void setConnectionTask(std::function<void(Connection*)> task);
     void handleReadEvent(int);
     void newConnection(Socket *sock);
     void deleteConnection(Socket *sock);
