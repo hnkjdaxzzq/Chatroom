@@ -26,6 +26,14 @@ Connection::~Connection() {
     delete rio;
 }
 
+int Connection::getFd() const {
+    return sock->getFd();
+}
+
+Socket* Connection::getSocket() const {
+    return sock;
+}
+
 ssize_t Connection::creadn(char *usrbuf, size_t n) {
     return rio->rio_readn(usrbuf, n);
 }
@@ -34,8 +42,8 @@ ssize_t Connection::creadnb(char *usrbuf, size_t n) {
     return rio->rio_readnb(usrbuf, n);
 }
 
-ssize_t Connection::cwriten(char *usrbuf, size_t n) {
-    return rio->rio_writen(usrbuf, n);
+ssize_t Connection::cwriten(const char *usrbuf, size_t n) {
+    return rio->rio_writen((void*)usrbuf, n);
 }
 
 void Connection::Do(std::function<void (Connection*)> task) {
