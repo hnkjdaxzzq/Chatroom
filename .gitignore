@@ -3,6 +3,7 @@
 build/
 Makefile
 .cache/
+.vscode
 
 # MacOS Cache
 .DS_Store
