@@ -16,6 +16,7 @@ target("httpReqParseTest")
     set_kind("binary")
     add_files("src/Http/HttpRequest.cpp")
     add_asflags("gcc::-std=c++17")
+    add_defines("TEST")
 --
 -- If you want to known more usage about xmake, please see https://xmake.io
 --

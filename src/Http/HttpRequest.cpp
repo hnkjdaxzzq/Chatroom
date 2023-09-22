@@ -70,6 +70,7 @@ std::pair<std::string, std::string> HttpRequest::parseColon(const std::string& p
     return std::make_pair(kv[0], kv[1]);
 }
 
+#ifdef TEST
 int main() {
     const char* httpreq = "GET /hello.txt HTTP/1.1\r\n"
                             "User-Agent: curl/7.16.3 libcurl/7.16.3 OpenSSL/0.9.7l zlib/1.2.3\r\n"
@@ -91,3 +92,4 @@ int main() {
 
 
 }
+#endif
