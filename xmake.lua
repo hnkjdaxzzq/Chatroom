@@ -2,14 +2,14 @@ add_rules("mode.debug", "mode.release")
 
 target("server")
     set_kind("binary")
-    add_includedirs("./include")
-    add_files("src/*.cpp", "server.cpp")
+    add_includedirs("./include", "src/Http")
+    add_files("src/*.cpp", "server.cpp", "src/Http/*.cpp")
     add_links("pthread")
     add_cxflags("gcc::-std=c++17")
 
 target("client")
     set_kind("binary")
-    add_includedirs("./include")
+    add_includedirs("./include", "src/Http")
     add_files("client.cpp", "src/util.cpp")
 
 target("httpReqParseTest")

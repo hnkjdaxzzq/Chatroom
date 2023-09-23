@@ -9,9 +9,7 @@
 
 class HttpRequest{
 public:
-    HttpRequest(const char*);
-
-    HttpRequest(const std::string&);
+    HttpRequest();
 
     std::shared_ptr<std::unordered_map<std::string, std::string>> getRequestline() const {
         return Requestline;
@@ -37,12 +35,15 @@ public:
         return (*Requestline)["version"]; 
     }
 
+    void parse(const char* reqmesg);
+    void parse(const std::string& reqmesg);
+    bool IskeepAlive() const ;
+
 private:
     std::shared_ptr<std::unordered_map<std::string, std::string>> Requestline;
     std::shared_ptr<std::unordered_map<std::string, std::string>> Header;
     std::shared_ptr<std::string> Data;
 
-    void parse(const std::string&);
 
     std::vector<std::string> splitDelimiter(const std::string& mesg, const std::string& delimiter);
     std::vector<std::string> parseLine(const std::string&);

@@ -19,6 +19,7 @@ private:
     void echo(int sockfd);
 public:
     Buffer readBuffer;
+    Buffer writeBuffer;
     std::function<void(Socket*)> deleteConnectionCallback;
 
     Connection(EventLoop *_loop, Socket *_sock);

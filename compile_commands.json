@@ -1,76 +1,96 @@
 [
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/client/linux/x86_64/release/client.cpp.o", "client.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/client/linux/x86_64/release/client.cpp.o", "client.cpp"],
   "file": "client.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/client/linux/x86_64/release/src/util.cpp.o", "src/util.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/client/linux/x86_64/release/src/util.cpp.o", "src/util.cpp"],
   "file": "src/util.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Connection.cpp.o", "src/Connection.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Connection.cpp.o", "src/Connection.cpp"],
   "file": "src/Connection.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Socket.cpp.o", "src/Socket.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Socket.cpp.o", "src/Socket.cpp"],
   "file": "src/Socket.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/util.cpp.o", "src/util.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/util.cpp.o", "src/util.cpp"],
   "file": "src/util.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/InetAddress.cpp.o", "src/InetAddress.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/InetAddress.cpp.o", "src/InetAddress.cpp"],
   "file": "src/InetAddress.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Buffer.cpp.o", "src/Buffer.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Buffer.cpp.o", "src/Buffer.cpp"],
   "file": "src/Buffer.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Epoll.cpp.o", "src/Epoll.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Epoll.cpp.o", "src/Epoll.cpp"],
   "file": "src/Epoll.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/EventLoop.cpp.o", "src/EventLoop.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/EventLoop.cpp.o", "src/EventLoop.cpp"],
   "file": "src/EventLoop.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Rio.cpp.o", "src/Rio.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Rio.cpp.o", "src/Rio.cpp"],
   "file": "src/Rio.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Server.cpp.o", "src/Server.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Server.cpp.o", "src/Server.cpp"],
   "file": "src/Server.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/ThreadPool.cpp.o", "src/ThreadPool.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/ThreadPool.cpp.o", "src/ThreadPool.cpp"],
   "file": "src/ThreadPool.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Channel.cpp.o", "src/Channel.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Channel.cpp.o", "src/Channel.cpp"],
   "file": "src/Channel.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Acceptor.cpp.o", "src/Acceptor.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Acceptor.cpp.o", "src/Acceptor.cpp"],
   "file": "src/Acceptor.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/server.cpp.o", "server.cpp"],
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/server.cpp.o", "server.cpp"],
   "file": "server.cpp"
+},
+{
+  "directory": "/home/zzq/chatroom",
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Http/http.cpp.o", "src/Http/http.cpp"],
+  "file": "src/Http/http.cpp"
+},
+{
+  "directory": "/home/zzq/chatroom",
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Http/HttpResponse.cpp.o", "src/Http/HttpResponse.cpp"],
+  "file": "src/Http/HttpResponse.cpp"
+},
+{
+  "directory": "/home/zzq/chatroom",
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/server/linux/x86_64/release/src/Http/HttpRequest.cpp.o", "src/Http/HttpRequest.cpp"],
+  "file": "src/Http/HttpRequest.cpp"
+},
+{
+  "directory": "/home/zzq/chatroom",
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-DTEST", "-DNDEBUG", "-o", "build/.objs/httpReqParseTest/linux/x86_64/release/src/Http/HttpRequest.cpp.o", "src/Http/HttpRequest.cpp"],
+  "file": "src/Http/HttpRequest.cpp"
 }]

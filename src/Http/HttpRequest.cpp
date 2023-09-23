@@ -7,23 +7,20 @@
 #include <vector>
 #include <iostream>
 
-HttpRequest::HttpRequest(const char* mesg) {
-    std::string httpmesg = mesg;
+HttpRequest::HttpRequest() {
     Requestline = std::make_shared<std::unordered_map<std::string, std::string>>();
     Header = std::make_shared<std::unordered_map<std::string, std::string>>();
     Data = std::make_shared<std::string>();
-    parse(mesg);
 }
 
-HttpRequest::HttpRequest(const std::string& mesg) {
-    Requestline = std::make_shared<std::unordered_map<std::string, std::string>>();
-    Header = std::make_shared<std::unordered_map<std::string, std::string>>();
-    Data = std::make_shared<std::string>();
-    parse(mesg);
+
+void HttpRequest::parse(const char* reqmesg) {
+    std::string msg = reqmesg;
+    parse(msg);
 }
 
-void HttpRequest::parse(const std::string& mesg) {
-    std::vector<std::string> lines = parseLine(mesg);
+void HttpRequest::parse(const std::string& reqmesg) {
+    std::vector<std::string> lines = parseLine(reqmesg);
     std::vector<std::string> reqline = parseSpace(lines[0]);
     if(reqline.size() != 3)
         throw "http request line parse failed\n";
@@ -63,6 +60,13 @@ std::vector<std::string> HttpRequest::parseSpace(const std::string& reqline) {
     return splitDelimiter(reqline, " ");
 }
 
+bool HttpRequest::IskeepAlive() const {
+    if(Header->count("Connection") == 1 ) {
+        return Header->find("Connection")->second == "keep-alive" && getVersion() == "HTTP/1.1";
+    }
+    return false;
+}
+
 std::pair<std::string, std::string> HttpRequest::parseColon(const std::string& params) {
     std::vector<std::string> kv = splitDelimiter(params, ":");
     if(kv.size() != 2)
@@ -78,7 +82,8 @@ int main() {
                             "Accept-Language: en, mi\r\n"
                             "\r\n"
                             "";
-    HttpRequest req(httpreq);
+    HttpRequest req;
+    req.parse(httpreq);
     std::cout << req.getMethod() << std::endl;
     std::cout << req.getUrl() << std::endl;
     std::cout << req.getVersion() << std::endl;
