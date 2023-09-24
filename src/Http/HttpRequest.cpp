@@ -1,7 +1,9 @@
 #include "HttpRequest.h"
 #include <cstddef>
+#include <cstdio>
 #include <memory>
 #include <ostream>
+#include <queue>
 #include <string>
 #include <utility>
 #include <vector>
@@ -28,6 +30,9 @@ void HttpRequest::parse(const std::string& reqmesg) {
     (*Requestline)["url"] = reqline[1];
     (*Requestline)["version"] = reqline[2];
 
+    for(auto it = lines.begin(); it != lines.end(); ++it)
+        std::printf("%s\n", it->c_str());
+    // throw "test";
     (*Data) = lines.back();
 
     for(auto it = lines.begin() + 1; it != lines.end() - 2; ++it) {
@@ -69,8 +74,12 @@ bool HttpRequest::IskeepAlive() const {
 
 std::pair<std::string, std::string> HttpRequest::parseColon(const std::string& params) {
     std::vector<std::string> kv = splitDelimiter(params, ":");
-    if(kv.size() != 2)
+    if(kv.size() < 2) {
+        printf("%s parse error\n", params.c_str());
         throw "parse http header failed\n";
+    }
+    for(auto it = kv.begin() + 2; it != kv.end(); ++it)
+        kv[1] += *it;
     return std::make_pair(kv[0], kv[1]);
 }
 

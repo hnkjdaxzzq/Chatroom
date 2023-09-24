@@ -14,14 +14,18 @@ void Http::read(Connection *con) {
     static char buf[2048];
     while(true) {
         bzero(&buf, sizeof(buf));
-        ssize_t byte_read = con->creadn(buf, sizeof(buf));
+        ssize_t byte_read = con->creadnb(buf, sizeof(buf));
         if(byte_read > 0) {
             con->readBuffer.Append(buf);
         } else if(byte_read == -1 && errno == EINTR) {
             printf("continue reading");
             continue;
         } else if(byte_read == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))) {
-            printf("message from client fd %d: length %ld\n", con->getFd(), con->readBuffer.size());
+            if(con->readBuffer.size() == 0)
+                con->readBuffer.Append(buf);
+            printf("message from client fd %d: length %ld, errno: %d\n", con->getFd(), con->readBuffer.size(), errno);
+            perror("why can't read the data");
+            break;
         } else if(byte_read == 0) {
             con->deleteConnectionCallback(con->getSocket());
             printf("EOF, client fd %d disconnected\n", con->getFd());
@@ -31,17 +35,19 @@ void Http::read(Connection *con) {
 }
 
 void Http::process(Connection *con) {
+    con->readBuffer.clear();
     read(con);
     request_ = std::make_unique<HttpRequest>();
     printf("\n%s\n", con->readBuffer.c_str());
     try {
         request_->parse(con->readBuffer.getBufText());
+        printf("path:%s\n", request_->getUrl().c_str());
         printf("parse httpRequest successful form fd:%d\n", con->getFd());
         response_ = std::make_unique<HttpResponse>(srcDir_, request_->getUrl(), request_->IskeepAlive(), 200);
         response_->MakeResponse(con->writeBuffer);
 
     } catch (const char* errmesg) {
-        printf("%s", errmesg);
+        printf("%s\n", errmesg);
         response_ = std::make_unique<HttpResponse>(srcDir_, request_->getUrl(), request_->IskeepAlive(), 400);
     }
 
@@ -63,7 +69,7 @@ void Http::process(Connection *con) {
         printf("Close connection fd:%d\n", con->getFd());
         con->deleteConnectionCallback(con->getSocket());
     } else {
-        printf("Send response to fd:%d successful\n", con->getFd());
+        printf("Send response size:%d to fd:%d successful\n",write_byte, con->getFd());
         response_->UnmapFile();
         if(!request_->IskeepAlive())
             con->deleteConnectionCallback(con->getSocket());

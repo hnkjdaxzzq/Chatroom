@@ -67,7 +67,8 @@ ssize_t Rio::rio_read(char *usrbuf, size_t n) {
 
     while(rp->rio_cnt <=0 ) {  // 如果缓冲区为空就得往缓冲区添加东西
         rp->rio_cnt = read(rp->rio_fd, rp->rio_buf, sizeof(rp->rio_buf));
-
+        // printf("read byte: %d\n", rp->rio_cnt);
+        // printf("read data:\n %s\n", rp->rio_buf);
         if(rp->rio_cnt < 0) {
             if(errno != EINTR)
                 return -1;

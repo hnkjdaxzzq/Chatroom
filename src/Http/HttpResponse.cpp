@@ -1,5 +1,6 @@
 #include "HttpResponse.h"
 #include <cstddef>
+#include <cstdio>
 #include <fcntl.h>
 #include <string>
 #include <sys/stat.h>
@@ -48,6 +49,7 @@ const unordered_map<int, string> HttpResponse::CODE_PATH {
 
 void HttpResponse::MakeResponse(Buffer &buff) {
     // 如果文件不存在，或者请求的是一个目录
+    std::printf("MakeResponse path: %s\n", (srcDir_ + path_).c_str());
     if(stat((srcDir_ + path_).data(), &mmFileStat_) < 0 || S_ISDIR(mmFileStat_.st_mode)) {
         code_ = 404;
     }
@@ -57,6 +59,7 @@ void HttpResponse::MakeResponse(Buffer &buff) {
     else if(code_ == -1) {
         code_ = 200;
     }
+    printf("code: %d\n", code_);
     ErrorHtml_();
     AddStateLine_(buff);
     AddHeader_(buff);
@@ -114,8 +117,10 @@ string HttpResponse::GetFileType_() {
 }
 
 void HttpResponse::AddContent_(Buffer &buff) {
+    std::printf("file path: %s\n", (srcDir_ + path_).c_str());
     int srcfd = open((srcDir_ + path_).data(), O_RDONLY);
     if(srcfd < 0) {
+        printf("%s: open failed\n", (srcDir_ + path_).data());
         ErrorContent(buff, "File not found!");
         return;
     }

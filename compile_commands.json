@@ -1,13 +1,8 @@
 [
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/client/linux/x86_64/release/client.cpp.o", "client.cpp"],
-  "file": "client.cpp"
-},
-{
-  "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/client/linux/x86_64/release/src/util.cpp.o", "src/util.cpp"],
-  "file": "src/util.cpp"
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-DTEST", "-DNDEBUG", "-o", "build/.objs/httpReqParseTest/linux/x86_64/release/src/Http/HttpRequest.cpp.o", "src/Http/HttpRequest.cpp"],
+  "file": "src/Http/HttpRequest.cpp"
 },
 {
   "directory": "/home/zzq/chatroom",
@@ -91,6 +86,11 @@
 },
 {
   "directory": "/home/zzq/chatroom",
-  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-DTEST", "-DNDEBUG", "-o", "build/.objs/httpReqParseTest/linux/x86_64/release/src/Http/HttpRequest.cpp.o", "src/Http/HttpRequest.cpp"],
-  "file": "src/Http/HttpRequest.cpp"
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/client/linux/x86_64/release/client.cpp.o", "client.cpp"],
+  "file": "client.cpp"
+},
+{
+  "directory": "/home/zzq/chatroom",
+  "arguments": ["/usr/bin/clang", "-c", "-Qunused-arguments", "-m64", "-fvisibility=hidden", "-fvisibility-inlines-hidden", "-O3", "-Iinclude", "-Isrc/Http", "-DNDEBUG", "-o", "build/.objs/client/linux/x86_64/release/src/util.cpp.o", "src/util.cpp"],
+  "file": "src/util.cpp"
 }]

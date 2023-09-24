@@ -54,7 +54,7 @@ void Connection::Do(std::function<void (Connection*)> task) {
     channel = new Channel(loop, sock->getFd());
     channel->setReadCallback(callback);
     channel->enableReading();
-    channel->useET();
+    // channel->useET();
 }
 
 void Connection::echo(int sockfd) {

@@ -36,7 +36,7 @@ int main() {
     //     } 
 
     // };
-    Http httpserv("/webapp");
+    Http httpserv("./webapp");
     auto task = std::bind(&Http::process, &httpserv, std::placeholders::_1);
     Server *server = new Server(loop, task);    
     loop->loop();
