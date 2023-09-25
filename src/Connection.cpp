@@ -12,7 +12,7 @@
 const int READ_BUFFER = 2048;
 
 Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr) {
-    // channel = new Channel(loop, sock->getFd());
+    channel = new Channel(loop, sock->getFd());
     rio = new Rio(sock->getFd());
     // std::function<void()> cb = std::bind(&Connection::echo, this, sock->getFd());
     // channel->setReadCallback(cb);
@@ -51,10 +51,10 @@ void Connection::Do(std::function<void (Connection*)> task) {
         task = [&](Connection*) {echo(sock->getFd());};
     }
     std::function<void()> callback = std::bind(task, this);
-    channel = new Channel(loop, sock->getFd());
+    // channel = new Channel(loop, sock->getFd());
     channel->setReadCallback(callback);
     channel->enableReading();
-    // channel->useET();
+    channel->useET();
 }
 
 void Connection::echo(int sockfd) {

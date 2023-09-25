@@ -2,11 +2,19 @@
 #include "Socket.h"
 #include "InetAddress.h"
 #include "Channel.h"
+#include <cstdint>
 #include <cstdio>
+#include <cstdlib>
+#include <string>
 
-Acceptor::Acceptor(EventLoop *_loop) : loop(_loop), sock(nullptr), acceptChannel(nullptr) {
+Acceptor::Acceptor(EventLoop *_loop, std::string listenAddr) : loop(_loop), sock(nullptr), acceptChannel(nullptr) {
     sock = new Socket();
-    InetAddress addr = InetAddress("127.0.0.1", 8888);
+    std::string::size_type pos =  listenAddr.find(":");
+    if(pos == std::string::npos) {
+        fprintf(stderr, "listenAddress set error: %s\n", listenAddr.c_str());
+        std::exit(-1);
+    }
+    InetAddress addr = InetAddress(listenAddr.substr(0, pos).c_str(), static_cast<std::uint16_t>(std::stoul(listenAddr.substr(pos+1))));
     sock->bind(addr);
     sock->listen();
     sock->setnonblocking();

@@ -5,6 +5,7 @@
 #include <asm-generic/errno.h>
 #include <cerrno>
 #include <cstdio>
+#include <cstring>
 #include <memory>
 #include <strings.h>
 #include <sys/types.h>
@@ -18,17 +19,17 @@ void Http::read(Connection *con) {
         if(byte_read > 0) {
             con->readBuffer.Append(buf);
         } else if(byte_read == -1 && errno == EINTR) {
-            printf("continue reading");
+            fprintf(stderr, "continue reading");
             continue;
         } else if(byte_read == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))) {
-            if(con->readBuffer.size() == 0)
+            if(strlen(buf) != 0)
                 con->readBuffer.Append(buf);
-            printf("read() message from client fd %d: length %ld, errno: %d\n", con->getFd(), con->readBuffer.size(), errno);
+            fprintf(stderr, "read() message from client fd %d: length %ld, errno: %d\n", con->getFd(), con->readBuffer.size(), errno);
             // perror("why can't read the data");
             break;
         } else if(byte_read == 0) {
             con->deleteConnectionCallback(con->getSocket());
-            printf("EOF, client fd %d disconnected\n", con->getFd());
+            fprintf(stderr, "EOF, client fd %d disconnected\n", con->getFd());
             break;
         }
     }
@@ -41,14 +42,15 @@ void Http::process(Connection *con) {
     try {
         request_->parse(con->readBuffer.getBufText());
         con->readBuffer.clear();
-        printf("process() path:%s\n", request_->getUrl().c_str());
-        printf("process() parse httpRequest successful form fd:%d\n", con->getFd());
+        fprintf(stderr, "fd:%d ,process() path:%s\n", con->getFd(),request_->getUrl().c_str());
+        fprintf(stderr, "process() parse httpRequest successful form fd:%d\n", con->getFd());
         response_ = std::make_unique<HttpResponse>(srcDir_, request_->getUrl(), request_->IskeepAlive(), 200);
         response_->MakeResponse(con->writeBuffer);
 
     } catch (const char* errmesg) {
-        printf("%s\n", errmesg);
+        fprintf(stderr, "%s\n", errmesg);
         response_ = std::make_unique<HttpResponse>(srcDir_, request_->getUrl(), request_->IskeepAlive(), 400);
+        response_->MakeResponse(con->writeBuffer);
     }
 
     /* 响应头 */
@@ -65,15 +67,15 @@ void Http::process(Connection *con) {
 
     int write_byte = writev(con->getFd(), iov_, ioCnt_);
     if(write_byte < 0) {
-        printf("Failed to send response to fd:%d\n", con->getFd());
-        printf("Close connection fd:%d\n", con->getFd());
+        fprintf(stderr, "Failed to send response to fd:%d\n", con->getFd());
+        fprintf(stderr, "Close connection fd:%d\n", con->getFd());
         con->deleteConnectionCallback(con->getSocket());
     } else {
-        printf("Send response size:%d to fd:%d successful\n",write_byte, con->getFd());
-        response_->UnmapFile();
+        fprintf(stderr, "Send response %s size:%d to fd:%d successful\n\n", (srcDir_ + request_->getUrl()).c_str(), write_byte, con->getFd());
+        
         if(!request_->IskeepAlive())
             con->deleteConnectionCallback(con->getSocket());
     }
-
+    response_->UnmapFile();
 
 }

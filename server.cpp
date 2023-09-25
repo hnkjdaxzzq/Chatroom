@@ -6,7 +6,7 @@
 #include"include/Server.h"
 #include <Connection.h>
 #include <util.h>
-#include <Http.h>
+#include <HttpServer.h>
 
 const int BUF_SIZE = 1024;
 
@@ -36,9 +36,9 @@ int main() {
     //     } 
 
     // };
-    Http httpserv("./webapp");
-    auto task = std::bind(&Http::process, &httpserv, std::placeholders::_1);
-    Server *server = new Server(loop, task);    
+    HttpServer httpserv("./webapp");
+    auto task = std::bind(&HttpServer::process, &httpserv, std::placeholders::_1);
+    Server *server = new Server(loop, "183.169.76.140:8888", task);    
     loop->loop();
     return 0;
     // Socket* serv_sock = new Socket();

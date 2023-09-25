@@ -19,7 +19,7 @@ private:
     ThreadPool *thpool;
     std::function<void(Connection*)> connectiontask;
 public:
-    Server(EventLoop*, std::function<void(Connection*)> contask = nullptr);
+    Server(EventLoop*, std::string listenAddr, std::function<void(Connection*)> contask = nullptr);
     ~Server();
 
     void setConnectionTask(std::function<void(Connection*)> task);

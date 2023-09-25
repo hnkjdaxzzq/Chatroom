@@ -4,9 +4,10 @@
 #include "Connection.h"
 #include "EventLoop.h"
 #include <functional>
+#include <string>
 
-Server::Server(EventLoop *_loop, std::function<void(Connection*)> contask) : mainReator(_loop), acceptor(nullptr), connectiontask(contask) {
-    acceptor = new Acceptor(mainReator);
+Server::Server(EventLoop *_loop, std::string listenAddr, std::function<void(Connection*)> contask) : mainReator(_loop), acceptor(nullptr), connectiontask(contask) {
+    acceptor = new Acceptor(mainReator, listenAddr);
     std::function<void(Socket*)> cb = std::bind(&Server::newConnection, this, std::placeholders::_1);
     acceptor->setNewConnectionCallback(cb);
     if(! connectiontask) {
