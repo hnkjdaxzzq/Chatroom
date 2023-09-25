@@ -49,4 +49,5 @@ private:
     std::vector<std::string> parseLine(const std::string&);
     std::vector<std::string> parseSpace(const std::string&);
     std::pair<std::string, std::string> parseColon(const std::string&);
+    std::string urlDecode(const std::string &url);
 };

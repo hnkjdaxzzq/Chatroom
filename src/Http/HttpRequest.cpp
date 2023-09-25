@@ -6,6 +6,8 @@
 #include <queue>
 #include <string>
 #include <utility>
+#include <sstream>
+#include <iomanip>
 #include <vector>
 #include <iostream>
 
@@ -21,17 +23,40 @@ void HttpRequest::parse(const char* reqmesg) {
     parse(msg);
 }
 
+std::string HttpRequest::urlDecode(const std::string &url) {
+    /* chatgpt 生成的url解码代码 */
+    std::stringstream decoded;
+    for (size_t i = 0; i < url.length(); ++i) {
+        if (url[i] == '%' && i + 2 < url.length()) {
+            int hex1 = url[i + 1];
+            int hex2 = url[i + 2];
+            if (isxdigit(hex1) && isxdigit(hex2)) {
+                int decodedChar = (hex1 >= 'A' ? hex1 - 'A' + 10 : hex1 - '0') * 16
+                                + (hex2 >= 'A' ? hex2 - 'A' + 10 : hex2 - '0');
+                decoded << static_cast<char>(decodedChar);
+                i += 2;
+                continue;
+            }
+        }
+        decoded << url[i];
+    }
+    return decoded.str();
+}
+
 void HttpRequest::parse(const std::string& reqmesg) {
     std::vector<std::string> lines = parseLine(reqmesg);
     std::vector<std::string> reqline = parseSpace(lines[0]);
-    if(reqline.size() != 3)
+    if(reqline.size() != 3) {
+        std::printf("header line:%s\n", lines[0].c_str());
         throw "http request line parse failed\n";
+    }
     (*Requestline)["method"] = reqline[0];
-    (*Requestline)["url"] = reqline[1];
+    auto url = urlDecode(reqline[1]);
+    (*Requestline)["url"] = url == "/" ? "/index.html" : url;
     (*Requestline)["version"] = reqline[2];
 
-    for(auto it = lines.begin(); it != lines.end(); ++it)
-        std::printf("%s\n", it->c_str());
+    // for(auto it = lines.begin(); it != lines.end(); ++it)
+        // std::printf("%s\n", it->c_str());
     // throw "test";
     (*Data) = lines.back();
 

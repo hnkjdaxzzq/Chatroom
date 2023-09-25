@@ -27,11 +27,13 @@ void Channel::handleEvent() {
 void Channel::enableReading() {
     events |= EPOLLIN | EPOLLPRI;
     loop->updateChannel(this);
+    setInEpoll();
 }
 
 void Channel::useET() {
     events |= EPOLLET;
     loop->updateChannel(this);
+    setInEpoll();
 }
 
 int Channel::getFd() {

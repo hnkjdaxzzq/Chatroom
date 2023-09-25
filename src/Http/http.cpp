@@ -14,7 +14,7 @@ void Http::read(Connection *con) {
     static char buf[2048];
     while(true) {
         bzero(&buf, sizeof(buf));
-        ssize_t byte_read = con->creadnb(buf, sizeof(buf));
+        ssize_t byte_read = con->creadn(buf, sizeof(buf));
         if(byte_read > 0) {
             con->readBuffer.Append(buf);
         } else if(byte_read == -1 && errno == EINTR) {
@@ -23,8 +23,8 @@ void Http::read(Connection *con) {
         } else if(byte_read == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))) {
             if(con->readBuffer.size() == 0)
                 con->readBuffer.Append(buf);
-            printf("message from client fd %d: length %ld, errno: %d\n", con->getFd(), con->readBuffer.size(), errno);
-            perror("why can't read the data");
+            printf("read() message from client fd %d: length %ld, errno: %d\n", con->getFd(), con->readBuffer.size(), errno);
+            // perror("why can't read the data");
             break;
         } else if(byte_read == 0) {
             con->deleteConnectionCallback(con->getSocket());
@@ -35,14 +35,14 @@ void Http::read(Connection *con) {
 }
 
 void Http::process(Connection *con) {
-    con->readBuffer.clear();
     read(con);
     request_ = std::make_unique<HttpRequest>();
-    printf("\n%s\n", con->readBuffer.c_str());
+    // printf("\n%s\n", con->readBuffer.c_str());
     try {
         request_->parse(con->readBuffer.getBufText());
-        printf("path:%s\n", request_->getUrl().c_str());
-        printf("parse httpRequest successful form fd:%d\n", con->getFd());
+        con->readBuffer.clear();
+        printf("process() path:%s\n", request_->getUrl().c_str());
+        printf("process() parse httpRequest successful form fd:%d\n", con->getFd());
         response_ = std::make_unique<HttpResponse>(srcDir_, request_->getUrl(), request_->IskeepAlive(), 200);
         response_->MakeResponse(con->writeBuffer);
 
