@@ -1,4 +1,5 @@
 #include "HttpRequest.h"
+#include <Buffer.h>
 #include <cstddef>
 #include <cstdio>
 #include <memory>
@@ -21,6 +22,10 @@ HttpRequest::HttpRequest() {
 void HttpRequest::parse(const char* reqmesg) {
     std::string msg = reqmesg;
     parse(msg);
+}
+
+void HttpRequest::parse(Buffer &readbuf) {
+    
 }
 
 std::string HttpRequest::urlDecode(const std::string &url) {

@@ -1,5 +1,9 @@
 #include "Socket.h"
 #include "InetAddress.h"
+#include "util.h"
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -35,6 +39,20 @@ int Socket::getFd() {
 
 void Socket::setnonblocking() {
     fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
+}
+
+void Socket::setnodelay() {
+    int enable = 1;
+    setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));
+}
+
+void Socket::setelegentclose() {
+    struct linger optLinger = { 0 };
+    /* 优雅关闭: 直到所剩数据发送完毕或超时 */
+    optLinger.l_onoff = 1;
+    optLinger.l_linger = 1;
+    int ret = setsockopt(fd, SOL_SOCKET, SO_LINGER, &optLinger, sizeof(optLinger));
+    errif(ret < 0, "Init linger error!");
 }
 
 int Socket::accept(InetAddress& _addr) {

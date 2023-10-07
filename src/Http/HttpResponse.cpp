@@ -48,7 +48,7 @@ const unordered_map<int, string> HttpResponse::CODE_PATH {
 
 
 void HttpResponse::MakeResponse(Buffer &buff) {
-    buff.clear();
+    buff.RetrieveAll();
     // 如果文件不存在，或者请求的是一个目录
     // std::fprintf(stderr, "MakeResponse() path: %s\n", (srcDir_ + path_).c_str());
     if(stat((srcDir_ + path_).c_str(), &mmFileStat_) < 0 || S_ISDIR(mmFileStat_.st_mode)) {

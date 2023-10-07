@@ -17,6 +17,10 @@ public:
 
     void setnonblocking();
 
+    void setnodelay();
+
+    void setelegentclose();
+
     int getFd();
 
 };

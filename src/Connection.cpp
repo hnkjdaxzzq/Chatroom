@@ -4,6 +4,8 @@
 #include "Rio.h"
 #include "util.h"
 #include <functional>
+#include <string>
+#include <sys/epoll.h>
 #include <sys/types.h>
 #include <unistd.h>
 #include <cstring>
@@ -14,6 +16,7 @@ const int READ_BUFFER = 2048;
 Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr) {
     channel = new Channel(loop, sock->getFd());
     rio = new Rio(sock->getFd());
+    sock->setnodelay();
     // std::function<void()> cb = std::bind(&Connection::echo, this, sock->getFd());
     // channel->setReadCallback(cb);
     // channel->enableReading();
@@ -30,21 +33,29 @@ int Connection::getFd() const {
     return sock->getFd();
 }
 
+Channel* Connection::getChannel() {
+    return channel;
+}
+
+void Connection::setOneshot() {
+    channel->setOneshot();
+}
+
 Socket* Connection::getSocket() const {
     return sock;
 }
 
-ssize_t Connection::creadn(char *usrbuf, size_t n) {
-    return rio->rio_readn(usrbuf, n);
-}
+// ssize_t Connection::creadn(char *usrbuf, size_t n) {
+//     return rio->rio_readn(usrbuf, n);
+// }
 
-ssize_t Connection::creadnb(char *usrbuf, size_t n) {
-    return rio->rio_readnb(usrbuf, n);
-}
+// ssize_t Connection::creadnb(char *usrbuf, size_t n) {
+//     return rio->rio_readnb(usrbuf, n);
+// }
 
-ssize_t Connection::cwriten(const char *usrbuf, size_t n) {
-    return rio->rio_writen((void*)usrbuf, n);
-}
+// ssize_t Connection::cwriten(const char *usrbuf, size_t n) {
+//     return rio->rio_writen((void*)usrbuf, n);
+// }
 
 void Connection::Do(std::function<void (Connection*)> task) {
     if (! task) {
@@ -53,24 +64,28 @@ void Connection::Do(std::function<void (Connection*)> task) {
     std::function<void()> callback = std::bind(task, this);
     // channel = new Channel(loop, sock->getFd());
     channel->setReadCallback(callback);
-    channel->enableReading();
+    channel->setOneshot();
     channel->useET();
+    channel->enableReading();
 }
 
 void Connection::echo(int sockfd) {
-    char buf[READ_BUFFER];
+    // char buf[READ_BUFFER];
     while(true) {    //由于使用非阻塞IO，读取客户端buffer，一次读取buf大小数据，直到全部读取完毕
-        bzero(&buf, sizeof(buf));
-        ssize_t bytes_read = rio->rio_readnb(buf, sizeof(buf));
+        // bzero(&buf, sizeof(buf));
+        int Errno = 0; 
+        ssize_t bytes_read = readBuffer.ReadFd(sockfd, &Errno);
         if(bytes_read > 0){
-            readBuffer.Append(buf);
-        } else if(bytes_read == -1 && errno == EINTR){  //客户端正常中断、继续读取
+            // readBuffer.Append(buf);
+            continue;
+        } else if(bytes_read == -1 && Errno == EINTR){  //客户端正常中断、继续读取
             printf("continue reading");
             continue;
-        } else if(bytes_read == -1 && ((errno == EAGAIN) || (errno == EWOULDBLOCK))){//非阻塞IO，这个条件表示数据全部读取完毕
-            printf("message from client fd %d: %s\n", sockfd, readBuffer.c_str());
-            errif(rio->rio_writen((void *)readBuffer.c_str(), sizeof(buf)) == -1, "socket write error");
-            readBuffer.clear();
+        } else if(bytes_read == -1 && ((Errno == EAGAIN) || (Errno == EWOULDBLOCK))){//非阻塞IO，这个条件表示数据全部读取完毕
+            std::string msg = readBuffer.RetrieveAllToStr();
+            printf("message from client fd %d: %s\n", sockfd, msg.c_str());
+            writeBuffer.Append(msg);
+            errif(writeBuffer.WriteFd(sockfd, &Errno) == -1, "socket write error");
             break;
         } else if(bytes_read == 0){  //EOF，客户端断开连接
             printf("EOF, client fd %d disconnected\n", sockfd);

@@ -21,12 +21,14 @@ public:
     Buffer readBuffer;
     Buffer writeBuffer;
     std::function<void(Socket*)> deleteConnectionCallback;
+    void setOneshot();
 
     Connection(EventLoop *_loop, Socket *_sock);
     ~Connection();
 
     int getFd() const ;
     Socket* getSocket() const ;
+    Channel* getChannel() ;
 
     ssize_t creadn(char *usrbuf, size_t n);
     ssize_t creadnb(char *usrbuf, size_t n);

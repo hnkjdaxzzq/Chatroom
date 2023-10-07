@@ -27,13 +27,21 @@ void Channel::handleEvent() {
 void Channel::enableReading() {
     events |= EPOLLIN | EPOLLPRI;
     loop->updateChannel(this);
-    setInEpoll();
+}
+
+void Channel::enableWriting() {
+    events |= EPOLLOUT;
+    loop->updateChannel(this);
 }
 
 void Channel::useET() {
     events |= EPOLLET;
-    loop->updateChannel(this);
-    setInEpoll();
+    // loop->updateChannel(this);
+}
+
+void Channel::setOneshot() {
+    events |= EPOLLONESHOT;
+    // loop->updateChannel(this);
 }
 
 int Channel::getFd() {
@@ -54,6 +62,10 @@ bool Channel::getInEpoll() {
 
 void Channel::setInEpoll() {
     inEpoll = true;
+}
+
+void Channel::setEvents(uint32_t _ev) {
+    events |= _ev;
 }
 
 void Channel::setRevents(uint32_t _ev) {
