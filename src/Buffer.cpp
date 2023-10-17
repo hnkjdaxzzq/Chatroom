@@ -121,7 +121,7 @@ void Buffer::EnsureWriteable(size_t len) {
     if(WriteableBytes() < len) {
         MakeSpace_(len);
     }
-    assert(WritableBytes() >= len);
+    assert(WriteableBytes() >= len);
 }
 
 ssize_t Buffer::ReadFd(int fd, int *Errno) {

@@ -13,6 +13,7 @@
 #include <strings.h>
 #include <sys/types.h>
 #include <sys/uio.h>
+#include <Log.h>
 
 void Http::read(Connection *con) {
     static char buf[2048];
@@ -60,12 +61,12 @@ void Http::read(Connection *con) {
             continue;
         } else if(bytes_read == -1 && ((Errno == EAGAIN) || (Errno == EWOULDBLOCK))){//非阻塞IO，这个条件表示数据全部读取完毕
             // std::string msg = readBuffer.RetrieveAllToStr();
-            fprintf(stderr, "read() message from client fd %d: length %ld, errno: %d\n", con->getFd(), con->readBuffer.ReadableBytes(), Errno);
+            LOG_DEBUG("read() message from client fd %d: length %ld, errno: %d\n", con->getFd(), con->readBuffer.ReadableBytes(), Errno);
             // writeBuffer.Append(msg);
             // errif(writeBuffer.WriteFd(sockfd, &Errno) == -1, "socket write error");
             break;
         } else if(bytes_read == 0){  //EOF，客户端断开连接
-            printf("EOF, client fd %d disconnected\n", con->getFd());
+            LOG_DEBUG("EOF, client fd %d disconnected\n", con->getFd());
             // close(sockfd);   //关闭socket会自动将文件描述符从epoll树上移除
             con->deleteConnectionCallback(con->getSocket());
             break;
@@ -80,13 +81,13 @@ void Http::process(Connection *con) {
     try {
         request_->parse(con->readBuffer.RetrieveAllToStr());
         // con->readBuffer.clear();
-        fprintf(stderr, "fd:%d ,process() path:%s\n", con->getFd(),request_->getUrl().c_str());
-        fprintf(stderr, "process() parse httpRequest successful form fd:%d\n", con->getFd());
+        LOG_DEBUG("fd:%d ,process() path:%s\n", con->getFd(),request_->getUrl().c_str());
+        LOG_DEBUG("process() parse httpRequest successful form fd:%d\n", con->getFd());
         response_ = std::make_unique<HttpResponse>(srcDir_, request_->getUrl(), request_->IskeepAlive(), 200);
         response_->MakeResponse(con->writeBuffer);
 
     } catch (const char* errmesg) {
-        fprintf(stderr, "%s\n", errmesg);
+        LOG_DEBUG("%s\n", errmesg);
         response_ = std::make_unique<HttpResponse>(srcDir_, request_->getUrl(), request_->IskeepAlive(), 400);
         response_->MakeResponse(con->writeBuffer);
     }
@@ -106,12 +107,11 @@ void Http::process(Connection *con) {
     int write_byte = writev(con->getFd(), iov_, ioCnt_);
     response_->UnmapFile();
     if(write_byte < 0) {
-        fprintf(stderr, "Failed to send response to fd:%d\n", con->getFd());
-        fprintf(stderr, "Close connection fd:%d\n", con->getFd());
+        LOG_DEBUG("Failed to send response to fd:%d\n", con->getFd());
+        LOG_DEBUG("Close connection fd:%d\n", con->getFd());
         // con->deleteConnectionCallback(con->getSocket());
     } else {
-        fprintf(stderr, "Send response %s size:%d to fd:%d successful\n\n", (srcDir_ + request_->getUrl()).c_str(), write_byte, con->getFd());
-        
+        LOG_DEBUG("Send response %s size:%d to fd:%d successful\n\n", (srcDir_ + request_->getUrl()).c_str(), write_byte, con->getFd());
         // if(!request_->IskeepAlive())
         //     con->deleteConnectionCallback(con->getSocket());
     }

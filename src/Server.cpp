@@ -5,15 +5,17 @@
 #include "EventLoop.h"
 #include <functional>
 #include <string>
+#include <Log.h>
 
 Server::Server(EventLoop *_loop, std::string listenAddr, std::function<void(Connection*)> contask) : mainReator(_loop), acceptor(nullptr), connectiontask(contask) {
+    Log::Instance()->init(0, "./log", ".log", 1000);
     acceptor = new Acceptor(mainReator, listenAddr);
     std::function<void(Socket*)> cb = std::bind(&Server::newConnection, this, std::placeholders::_1);
     acceptor->setNewConnectionCallback(cb);
     if(! connectiontask) {
-        printf("Don't set connection task, use default echo server\n");
+        LOG_DEBUG("Don't set connection task, use default echo server\n");
     }
-    int size = std::thread::hardware_concurrency();
+    int size = 2; //std::thread::hardware_concurrency();
     thpool = new ThreadPool(size);
     for(auto i = 0; i < size; ++i) {
         subReactors.emplace_back(new EventLoop());

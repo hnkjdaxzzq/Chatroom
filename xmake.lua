@@ -15,7 +15,7 @@ target("client")
 target("httpReqParseTest")
     set_kind("binary")
     add_includedirs("./include", "src/Http")
-    add_files("src/Http/HttpRequest.cpp")
+    add_files("src/Http/HttpRequest.cpp", "src/Log.cpp", "src/Buffer.cpp")
     add_asflags("gcc::-std=c++17")
     add_defines("TEST")
 --

@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <unordered_map>
 #include <sys/mman.h>
+#include <Log.h>
 
 using std::string;
 using std::unordered_map;
@@ -53,7 +54,7 @@ void HttpResponse::MakeResponse(Buffer &buff) {
     // std::fprintf(stderr, "MakeResponse() path: %s\n", (srcDir_ + path_).c_str());
     if(stat((srcDir_ + path_).c_str(), &mmFileStat_) < 0 || S_ISDIR(mmFileStat_.st_mode)) {
         code_ = 404;
-        fprintf(stderr, "request %s 404\n", (srcDir_ + path_).c_str());
+        LOG_DEBUG("request %s 404\n", (srcDir_ + path_).c_str());
     }
     else if(!(mmFileStat_.st_mode & S_IROTH)) { // 文件没有访问权限
         code_ = 403;
@@ -61,7 +62,7 @@ void HttpResponse::MakeResponse(Buffer &buff) {
     else if(code_ == -1) {
         code_ = 200;
     }
-    fprintf(stderr, "MakeResponse() path: %s  code: %d\n", (srcDir_ + path_).c_str(), code_);
+    LOG_DEBUG("MakeResponse() path: %s  code: %d\n", (srcDir_ + path_).c_str(), code_);
     ErrorHtml_();
     AddStateLine_(buff);
     AddHeader_(buff);
@@ -119,17 +120,17 @@ string HttpResponse::GetFileType_() {
 }
 
 void HttpResponse::AddContent_(Buffer &buff) {
-    std::fprintf(stderr, "AddContent() file path: %s\n", (srcDir_ + path_).c_str());
+    LOG_DEBUG("AddContent() file path: %s\n", (srcDir_ + path_).c_str());
     int srcfd = open((srcDir_ + path_).c_str(), O_RDONLY);
     if(srcfd < 0) {
-        fprintf(stderr, "%s: open failed\n", (srcDir_ + path_).c_str());
+        LOG_ERROR("%s: open failed\n", (srcDir_ + path_).c_str());
         ErrorContent(buff, "File not found!");
         return;
     }
 
     auto mfile = mmap(0, mmFileStat_.st_size, PROT_READ, MAP_PRIVATE, srcfd, 0);
     if(mfile == MAP_FAILED) {
-        fprintf(stderr, "%s: mmap failed\n", (srcDir_ + path_).c_str());
+        LOG_ERROR("%s: mmap failed\n", (srcDir_ + path_).c_str());
         ErrorContent(buff, "File not Found!");
         return;
     }

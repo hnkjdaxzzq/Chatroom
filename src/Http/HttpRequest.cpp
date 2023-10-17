@@ -11,6 +11,7 @@
 #include <iomanip>
 #include <vector>
 #include <iostream>
+#include <Log.h>        
 
 HttpRequest::HttpRequest() {
     Requestline = std::make_shared<std::unordered_map<std::string, std::string>>();
@@ -52,7 +53,7 @@ void HttpRequest::parse(const std::string& reqmesg) {
     std::vector<std::string> lines = parseLine(reqmesg);
     std::vector<std::string> reqline = parseSpace(lines[0]);
     if(reqline.size() != 3) {
-        std::fprintf(stderr, "header line:%s\n", lines[0].c_str());
+        LOG_ERROR("header line:%s\n", lines[0].c_str());
         throw "http request line parse failed\n";
     }
     (*Requestline)["method"] = reqline[0];
@@ -105,7 +106,7 @@ bool HttpRequest::IskeepAlive() const {
 std::pair<std::string, std::string> HttpRequest::parseColon(const std::string& params) {
     std::vector<std::string> kv = splitDelimiter(params, ":");
     if(kv.size() < 2) {
-        fprintf(stderr, "%s parse error\n", params.c_str());
+        LOG_ERROR("%s parse error\n", params.c_str());
         throw "parse http header failed\n";
     }
     for(auto it = kv.begin() + 2; it != kv.end(); ++it)
