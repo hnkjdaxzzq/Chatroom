@@ -85,6 +85,11 @@ std::string Buffer::RetrieveAllToStr() {
     return str;
 }
 
+std::string Buffer::GetBufferToStr() {
+    std::string str(Peek(), ReadableBytes());
+    return str;
+}
+
 const char* Buffer::BeginWriteConst() const {
     return BeginPtr_() + writerIndex_;
 }

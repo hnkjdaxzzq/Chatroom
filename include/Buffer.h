@@ -46,6 +46,7 @@ public:
 
     void RetrieveAll();
     std::string RetrieveAllToStr();
+    std::string GetBufferToStr();
 
     const char* BeginWriteConst() const;
     char* BeginWrite();

@@ -13,6 +13,7 @@ public:
     HttpRequest();
 
     enum class ParseState {
+        REQUEST_LINE,
         METHOD,
         URL,
         VERSION,

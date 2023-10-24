@@ -27,6 +27,7 @@ void HttpRequest::parse(const char* reqmesg) {
 
 void HttpRequest::parse(Buffer &readbuf) {
     
+    
 }
 
 std::string HttpRequest::urlDecode(const std::string &url) {
