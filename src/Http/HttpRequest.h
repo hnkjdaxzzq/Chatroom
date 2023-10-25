@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Buffer.h>
+#include <cstddef>
 #include <memory>
 #include <string>
 #include <unordered_map>
@@ -20,6 +21,9 @@ public:
         HEADERS,
         HEADER_NAME,
         HEADER_VALUE,
+        REQUEST_DATA,
+        CRLF,
+        FINISH,
         ERROR
     };
 
@@ -36,8 +40,7 @@ public:
     }
 
     std::string getMethod() const {
-        // return method_;
-        return (*Requestline)["method"];
+        return method_;
     }
 
     std::string getUri() const {
@@ -45,15 +48,14 @@ public:
     }
 
     std::string getUrl() const {
-        return (*Requestline)["url"];
+        return uri_; 
     }
 
     std::string getVersion() const {
-        // return version_;
-        return (*Requestline)["version"]; 
+        return version_;
     }
 
-    void parse(Buffer &readbuf);
+    bool parse(Buffer &readbuf);
     void parse(const char* reqmesg);
     void parse(const std::string& reqmesg);
     bool IskeepAlive() const ;
@@ -72,4 +74,16 @@ private:
     std::vector<std::string> parseSpace(const std::string&);
     std::pair<std::string, std::string> parseColon(const std::string&);
     std::string urlDecode(const std::string &url);
+
+    void parseRequestLine(const std::string& str, size_t &pos, ParseState &state);
+    std::string parseMethod(const std::string& str, size_t &pos, ParseState &state);
+    std::string parseUri(const std::string& str, size_t &pos, ParseState &state);
+    std::string parseVersion(const std::string& str, size_t &pos, ParseState &state);
+
+    void parseHeaders(const std::string& str, size_t &pos, ParseState &state);
+    std::string parseHeaderName(const std::string& str, size_t &pos, ParseState &state);
+    std::string parseHeaderValue(const std::string& str, size_t &pos, ParseState &state);
+
+    void parseRequestData(const std::string& str, size_t &pos, ParseState &state);
+    
 };

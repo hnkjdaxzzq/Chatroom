@@ -25,10 +25,197 @@ void HttpRequest::parse(const char* reqmesg) {
     parse(msg);
 }
 
-void HttpRequest::parse(Buffer &readbuf) {
-    
-    
+bool HttpRequest::parse(Buffer &readbuf) {
+    // 获取HttpRequest报文数据
+    std::string reqData = readbuf.GetBufferToStr();
+    ParseState state = ParseState::REQUEST_LINE;
+    size_t pos = 0;
+    while(true) {
+        switch (state) {
+        case ParseState::REQUEST_LINE:
+            parseRequestLine(reqData, pos, state);
+            break;
+        case ParseState::HEADERS:
+            parseHeaders(reqData, pos, state);
+            break;
+        case ParseState::REQUEST_DATA:
+            parseRequestData(reqData, pos, state);
+            break;
+        case ParseState::FINISH:
+            readbuf.HasWritten(pos);
+            return true;
+        case ParseState::ERROR:
+            return false;
+        default: 
+            return false;
+        }
+    }
 }
+
+void HttpRequest::parseRequestLine(const std::string &str, size_t &pos, ParseState &state) {
+    state = ParseState::METHOD;
+    while(true) {
+        switch (state) {
+            case ParseState::METHOD:
+                method_ = parseMethod(str, pos, state);
+                break;
+            case ParseState::URL:
+                uri_ = parseUri(str, pos, state);
+                break;
+            case ParseState::VERSION:
+                version_ = parseVersion(str, pos, state);
+                break;
+            case ParseState::CRLF:
+                state = ParseState::HEADERS;
+                return;
+            case ParseState::ERROR:
+                return;
+            default:
+                state = ParseState::ERROR;
+                return;
+        }
+    }
+}
+
+void HttpRequest::parseHeaders(const std::string& str, size_t &pos, ParseState &state) {
+    state = ParseState::HEADER_NAME;
+    std::string key, value;
+    while (true) {
+        switch (state) {
+            case ParseState::HEADER_NAME:
+                key = parseHeaderName(str, pos, state);
+                break;
+            case ParseState::HEADER_VALUE:
+                value = parseHeaderValue(str, pos, state);
+                (*Header)[key] = value;
+                break;
+            case ParseState::CRLF:
+                state = ParseState::REQUEST_DATA;
+                return;
+            case ParseState::ERROR:
+                return;
+            default:
+                state = ParseState::ERROR;
+                return;
+        }
+    }
+}
+
+void HttpRequest::parseRequestData(const std::string& str, size_t &pos, ParseState &state) {
+    if(pos >= str.size()) {
+        state = ParseState::ERROR;
+        return;
+    }
+    Data = std::make_shared<std::string>(str.substr(pos));
+    state = ParseState::FINISH;
+}
+
+std::string HttpRequest::parseHeaderName(const std::string& str, size_t &pos, ParseState &state) {
+    std::string name;
+    size_t len = 0;
+    do {
+        if(pos + len >= str.size()) {
+            state = ParseState::ERROR;
+            return name;
+        }
+        ++len;
+    } while (str[pos+len] != ':') ;
+    
+    name = str.substr(pos, len);
+    state = ParseState::HEADER_VALUE;
+    pos += len + 1;
+    return name;
+}
+
+std::string HttpRequest::parseHeaderValue(const std::string& str, size_t &pos, ParseState &state) {
+    std::string value;
+    size_t len = 0;
+    do {
+        if(pos + len >= str.size()) {
+            state = ParseState::ERROR;
+            return value;
+        }
+        ++len;
+    } while(str[pos + len] != '\r');
+
+    value = str.substr(pos, len);
+    ++len;
+
+    if(!(pos + len < str.size() && str[pos + len] == '\n')) {
+        state = ParseState::ERROR;
+        return value;
+    }
+
+    state = ParseState::HEADER_NAME;
+    pos += len + 1;
+
+    if( pos + 1 < str.size() && str[pos] == '\r' && str[pos + 1] == '\n') {
+        state = ParseState::CRLF;
+        pos += 2;
+    }
+
+    return value;
+}
+
+std::string HttpRequest::parseMethod(const std::string& str, size_t &pos, ParseState &state) {
+    std::string method;
+    size_t len = 0;
+    do {
+        if(pos + len >= str.size()) {
+            state = ParseState::ERROR;
+            return method;
+        }
+        ++len;
+    } while (str[pos+len] != ' ') ;
+    
+    method = str.substr(pos, len);
+    state = ParseState::URL;
+    pos += len + 1;
+    return method;
+}
+
+std::string HttpRequest::parseUri(const std::string& str, size_t &pos, ParseState &state) {
+    std::string uri;
+    size_t len = 0; 
+    do {
+        if(pos + len >= str.size()) {
+            state = ParseState::ERROR;
+            return uri;
+        }
+        ++len;
+    } while (str[pos+len] != ' ') ;
+
+    uri = str.substr(pos, len);
+    uri = urlDecode(uri);
+    state = ParseState::VERSION;
+    pos += len + 1;
+    return uri;
+}
+
+std::string HttpRequest::parseVersion(const std::string& str, size_t &pos, ParseState &state) {
+    std::string version;
+    size_t len = 0;
+    do {
+        if(pos + len >= str.size()) {
+            state = ParseState::ERROR;
+            return version;
+        }
+        ++len;
+    } while(str[pos + len] != '\r');
+
+    version = str.substr(pos, len);
+    ++len;
+    if(pos + len < str.size() && str[pos + len] == '\n') {
+        state = ParseState::CRLF;
+        pos += len + 1;
+    } else {
+        state = ParseState::ERROR;
+    }
+
+    return version;
+}
+
+
 
 std::string HttpRequest::urlDecode(const std::string &url) {
     /* chatgpt 生成的url解码代码 */
@@ -124,7 +311,9 @@ int main() {
                             "\r\n"
                             "";
     HttpRequest req;
-    req.parse(httpreq);
+    Buffer buf;
+    buf.Append(httpreq);
+    req.parse(buf);
     std::cout << req.getMethod() << std::endl;
     std::cout << req.getUrl() << std::endl;
     std::cout << req.getVersion() << std::endl;
