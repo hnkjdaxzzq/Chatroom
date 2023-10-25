@@ -1,6 +1,7 @@
 #include "Epoll.h"
 #include "Channel.h"
 #include "util.h"
+#include <sys/epoll.h>
 #include <unistd.h>
 #include <cstring>
 
@@ -31,6 +32,14 @@ std::vector<Channel*> Epoll::poll(int timeout) {
         activeChannels.push_back(ch);
     }
     return activeChannels;
+}
+
+void Epoll::delChannel(Channel *channel) {
+    int fd = channel->getFd();
+    if(fd == -1)
+        return;
+    
+    errif(epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr) == -1, "epoll del error");
 }
 
 void Epoll::updateChannel(Channel *channel) {

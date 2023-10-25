@@ -33,7 +33,7 @@ Acceptor::~Acceptor() {
 void Acceptor::acceptConnection() {
     InetAddress clnt_addr;
     Socket *clnt_sock = new Socket(sock->accept(clnt_addr));
-    LOG_DEBUG("New clint fd %d! IP: %s Port: %d\n", clnt_sock->getFd(), inet_ntoa(clnt_addr.getAddr().sin_addr), ntohs(clnt_addr.getAddr().sin_port));
+    LOG_INFO("New clint fd %d! IP: %s Port: %d\n", clnt_sock->getFd(), inet_ntoa(clnt_addr.getAddr().sin_addr), ntohs(clnt_addr.getAddr().sin_port));
     clnt_sock->setnonblocking();
     clnt_sock->setelegentclose();
     newConnectionCallback(clnt_sock);

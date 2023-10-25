@@ -7,9 +7,20 @@
 #include <Buffer.h>
 class HttpResponse {
 public:
-    HttpResponse(const std::string& srcDir = "webapp/default", const std::string& path = "index.html", bool iskeepAlive = false, int code = 200) :
+    HttpResponse(const std::string& srcDir , const std::string& path = "index.html", bool iskeepAlive = false, int code = 200) :
                 srcDir_(srcDir), path_(path), iskeepAlive_(iskeepAlive), code_(-1), mmFile_(nullptr)
     {
+        mmFileStat_ = {0};
+    }
+
+    HttpResponse() = default;
+
+    void init(const std::string& srcDir = "webapp/default", const std::string& path = "index.html", bool iskeepAlive = false, int code = 200) {
+        srcDir_ = srcDir;
+        path_ = path;
+        iskeepAlive_ = iskeepAlive;
+        code_ = code;
+        mmFile_ = nullptr;
         mmFileStat_ = {0};
     }
 

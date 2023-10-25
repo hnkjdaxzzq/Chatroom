@@ -14,6 +14,8 @@ public:
     Epoll();
     ~Epoll();
 
+
+    void delChannel(Channel*);
     void updateChannel(Channel*);
 
     std::vector<Channel*> poll(int timeout = -1);

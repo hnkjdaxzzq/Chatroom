@@ -1,8 +1,11 @@
 #include "Connection.h"
+#include "Log.h"
 #include "Socket.h"
 #include "Channel.h"
 #include "Rio.h"
 #include "util.h"
+#include <asm-generic/errno-base.h>
+#include <asm-generic/errno.h>
 #include <functional>
 #include <string>
 #include <sys/epoll.h>
@@ -15,7 +18,7 @@ const int READ_BUFFER = 2048;
 
 Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr) {
     channel = new Channel(loop, sock->getFd());
-    rio = new Rio(sock->getFd());
+    // rio = new Rio(sock->getFd());
     sock->setnodelay();
     // std::function<void()> cb = std::bind(&Connection::echo, this, sock->getFd());
     // channel->setReadCallback(cb);
@@ -23,10 +26,72 @@ Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_soc
     // channel->useET();
 }
 
+ssize_t Connection::readNonBlocking(int *Errno) {
+    ssize_t readBytes = 0;
+    ssize_t readn = 0;
+    while (true) 
+    {
+        readn = readBuffer.ReadFd(sock->getFd(), Errno);
+        if(readn > 0 ) {
+            readBytes += readn;
+            continue;
+        }
+
+        if(readn < 0 && *Errno == EINTR) {
+            // 系统正常中断，继续读取数据
+            continue;
+        } else if( readn < 0 && ( *Errno == EAGAIN || *Errno == EWOULDBLOCK)) {
+            // 读取数据完成
+            break;
+        } else if (readn == 0) {
+            // EOF，客户端断开连接
+            // 暂时先不进行后续处理，等将http模块调通后，加入定时器
+            closed = true;
+            break;
+        }
+    }
+    return readBytes;
+}
+
+ssize_t Connection::writeNonBlocking(int *Errno) {
+    ssize_t writeBytes = 0;
+    ssize_t writen = 0;
+    while (true) {
+        writen = writeBuffer.WriteFd(sock->getFd(), Errno);
+        if( writen > 0) {
+            writeBytes += writen;
+            continue;
+        }
+
+        if( writen < 0 && *Errno == EINTR) {
+            continue;
+        }
+        else if (writen < 0 && *Errno == EPIPE) {
+            LOG_ERROR("write mesage to fd:%d that was already closed", sock->getFd());
+            closed = true;
+            break;
+        }
+        else if( writen < 0 && *Errno == EBADF) {
+            LOG_ERROR("fd:%d invalid or can't write", sock->getFd());
+            closed = true;
+            break;
+        }
+        else if (writen < 0 && (*Errno == EAGAIN || *Errno == EWOULDBLOCK)) {
+            // 写阻塞了
+            break;
+        }
+    }
+    return writeBytes;
+}
+
 Connection::~Connection() {
     delete channel;
     delete sock;
-    delete rio;
+    // delete rio;
+}
+
+bool Connection::isClosed() const {
+    return closed;
 }
 
 int Connection::getFd() const {

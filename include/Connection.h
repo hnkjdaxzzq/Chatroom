@@ -15,8 +15,9 @@ private:
     EventLoop *loop;
     Socket *sock;
     Channel *channel;
-    Rio *rio;
+    // Rio *rio; // 不用
     void echo(int sockfd);
+    bool closed;
 public:
     Buffer readBuffer;
     Buffer writeBuffer;
@@ -26,13 +27,17 @@ public:
     Connection(EventLoop *_loop, Socket *_sock);
     ~Connection();
 
+    bool isClosed() const ;
     int getFd() const ;
     Socket* getSocket() const ;
     Channel* getChannel() ;
 
-    ssize_t creadn(char *usrbuf, size_t n);
-    ssize_t creadnb(char *usrbuf, size_t n);
-    ssize_t cwriten(const char *usrbuf, size_t n);
+    ssize_t readNonBlocking(int *Errno);
+    ssize_t writeNonBlocking(int *Errno);
+
+    // ssize_t creadn(char *usrbuf, size_t n);
+    // ssize_t creadnb(char *usrbuf, size_t n);
+    // ssize_t cwriten(const char *usrbuf, size_t n);
 
     void Do(std::function<void(Connection*)> task);
     void setDeleteConnectionCallback(std::function<void(Socket*)>);
