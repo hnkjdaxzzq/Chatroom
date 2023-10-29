@@ -102,12 +102,11 @@ void HttpRequest::parseHeaders(const std::string& str, size_t &pos, ParseState &
 }
 
 void HttpRequest::parseRequestData(const std::string& str, size_t &pos, ParseState &state) {
+    state = ParseState::FINISH;
     if(pos >= str.size()) {
-        state = ParseState::ERROR;
         return;
     }
     Data = std::make_shared<std::string>(str.substr(pos));
-    state = ParseState::FINISH;
 }
 
 std::string HttpRequest::parseHeaderName(const std::string& str, size_t &pos, ParseState &state) {

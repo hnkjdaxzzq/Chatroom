@@ -9,7 +9,7 @@
 
 Server::Server(EventLoop *_loop, std::string listenAddr, std::function<void(Connection*)> contask) : mainReator(_loop), acceptor(nullptr), connectiontask(contask) {
     Log::Instance()->init(0, "./log", ".log", 1000);
-    acceptor = new Acceptor(mainReator, listenAddr);
+    acceptor = new Acceptor(mainReator, 8888);
     std::function<void(Socket*)> cb = std::bind(&Server::newConnection, this, std::placeholders::_1);
     acceptor->setNewConnectionCallback(cb);
     if(! connectiontask) {

@@ -1,5 +1,6 @@
 #pragma once
 #include "util.h"
+#include <mutex>
 #include <sys/epoll.h>
 #include <vector>
 
@@ -10,6 +11,7 @@ class Epoll
 private:
     int epfd;
     struct epoll_event *events;
+    std::mutex mutx_;
 public:
     Epoll();
     ~Epoll();

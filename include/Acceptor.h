@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 #include <functional>
 #include <string>
 
@@ -14,7 +15,7 @@ private:
     Channel *acceptChannel;
     std::function<void(Socket*)> newConnectionCallback;
 public:
-    Acceptor(EventLoop *_loop, std::string listenAddr);
+    Acceptor(EventLoop *_loop, std::uint16_t port);
     ~Acceptor();
     void acceptConnection();
     void setNewConnectionCallback(std::function<void(Socket*)>);

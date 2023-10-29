@@ -18,9 +18,11 @@ public:
     Channel(EventLoop *_loop, int _fd);
     ~Channel();
 
+    void delChannel();
     void handleEvent();
     void enableReading();
     void enableWriting();
+    void update();
     void enableReadAndWeiting();
 
     int getFd();

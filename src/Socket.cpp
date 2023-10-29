@@ -1,11 +1,14 @@
 #include "Socket.h"
 #include "InetAddress.h"
 #include "util.h"
+#include <cerrno>
+#include <cstring>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <Log.h>
 
 Socket::Socket() : fd(-1) {
     fd = socket(AF_INET, SOCK_STREAM, 0);
@@ -13,10 +16,12 @@ Socket::Socket() : fd(-1) {
 }
 
 Socket::Socket(int _fd) : fd(_fd) {
+    fd = _fd;
     errif(fd == -1, "socket create error");
 }
 
 Socket::~Socket() {
+    LOG_DEBUG("fd[%d] closed", fd);
     if(fd != -1) {
         close(fd);
         fd = -1;
@@ -43,7 +48,10 @@ void Socket::setnonblocking() {
 
 void Socket::setnodelay() {
     int enable = 1;
-    setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));
+    int ret = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (void*)&enable, sizeof(enable));
+    if(ret < 0) {
+        LOG_ERROR("fd[%d] Close Nagle failed! %s", fd, strerror(errno));
+    }
 }
 
 void Socket::setelegentclose() {
@@ -52,14 +60,18 @@ void Socket::setelegentclose() {
     optLinger.l_onoff = 1;
     optLinger.l_linger = 1;
     int ret = setsockopt(fd, SOL_SOCKET, SO_LINGER, &optLinger, sizeof(optLinger));
-    errif(ret < 0, "Init linger error!");
+    if(ret < 0) {
+        LOG_ERROR("fd[%d] Init linger error! %s", fd, strerror(errno));
+    }
+    // errif(ret < 0, "Init linger error!");
 }
 
 int Socket::accept(InetAddress& _addr) {
     struct sockaddr_in clnt_addr;
     socklen_t clnt_len = sizeof(clnt_addr);
     bzero(&clnt_addr, sizeof(clnt_addr));
-    int clntFd = ::accept(fd, (sockaddr*)&clnt_addr, &clnt_len);
+    int clntFd = -1;
+    clntFd = ::accept(fd, (sockaddr*)&clnt_addr, &clnt_len);
     errif(clntFd < 0, "socket accept error");
     _addr.setAddr(clnt_addr);
     _addr.setAddrlen(clnt_len);

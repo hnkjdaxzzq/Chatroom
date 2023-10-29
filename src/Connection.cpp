@@ -16,7 +16,7 @@
 
 const int READ_BUFFER = 2048;
 
-Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr) {
+Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_sock), channel(nullptr), closed(false) {
     channel = new Channel(loop, sock->getFd());
     // rio = new Rio(sock->getFd());
     sock->setnodelay();
@@ -28,7 +28,7 @@ Connection::Connection(EventLoop *_loop, Socket *_sock) : loop(_loop), sock(_soc
 
 ssize_t Connection::readNonBlocking(int *Errno) {
     ssize_t readBytes = 0;
-    ssize_t readn = 0;
+    ssize_t readn = -1;
     while (true) 
     {
         readn = readBuffer.ReadFd(sock->getFd(), Errno);
@@ -36,18 +36,24 @@ ssize_t Connection::readNonBlocking(int *Errno) {
             readBytes += readn;
             continue;
         }
+        
+        if (readn == 0) {
+            // EOF，客户端断开连接
+            // 暂时先不进行后续处理，等将http模块调通后，加入定时器
+            LOG_DEBUG("Client [%d] closed connection", sock->getFd());
+            closed = true;
+            return 0;
+        }
 
         if(readn < 0 && *Errno == EINTR) {
             // 系统正常中断，继续读取数据
             continue;
         } else if( readn < 0 && ( *Errno == EAGAIN || *Errno == EWOULDBLOCK)) {
             // 读取数据完成
-            break;
-        } else if (readn == 0) {
-            // EOF，客户端断开连接
-            // 暂时先不进行后续处理，等将http模块调通后，加入定时器
-            closed = true;
-            break;
+            if(readBytes != 0)
+                break;
+        } else if( readn < 0) {
+            return readn;
         }
     }
     return readBytes;
@@ -58,6 +64,12 @@ ssize_t Connection::writeNonBlocking(int *Errno) {
     ssize_t writen = 0;
     while (true) {
         writen = writeBuffer.WriteFd(sock->getFd(), Errno);
+        
+        if( writen == 0) {
+            //数据发送完毕
+            break;
+        }
+
         if( writen > 0) {
             writeBytes += writen;
             continue;
@@ -69,12 +81,12 @@ ssize_t Connection::writeNonBlocking(int *Errno) {
         else if (writen < 0 && *Errno == EPIPE) {
             LOG_ERROR("write mesage to fd:%d that was already closed", sock->getFd());
             closed = true;
-            break;
+            return writen;
         }
         else if( writen < 0 && *Errno == EBADF) {
             LOG_ERROR("fd:%d invalid or can't write", sock->getFd());
             closed = true;
-            break;
+            return writen;
         }
         else if (writen < 0 && (*Errno == EAGAIN || *Errno == EWOULDBLOCK)) {
             // 写阻塞了

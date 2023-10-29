@@ -8,17 +8,12 @@
 #include <string>
 #include <Log.h>
 
-Acceptor::Acceptor(EventLoop *_loop, std::string listenAddr) : loop(_loop), sock(nullptr), acceptChannel(nullptr) {
+Acceptor::Acceptor(EventLoop *_loop, uint16_t port) : loop(_loop), sock(nullptr), acceptChannel(nullptr) {
     sock = new Socket();
-    std::string::size_type pos =  listenAddr.find(":");
-    if(pos == std::string::npos) {
-        LOG_DEBUG("listenAddress set error: %s\n", listenAddr.c_str());
-        std::exit(-1);
-    }
-    InetAddress addr = InetAddress(listenAddr.substr(0, pos).c_str(), static_cast<std::uint16_t>(std::stoul(listenAddr.substr(pos+1))));
+    InetAddress addr = InetAddress("0.0.0.0", port);
     sock->bind(addr);
     sock->listen();
-    sock->setnonblocking();
+    // sock->setnonblocking();
     acceptChannel = new Channel(loop, sock->getFd());
     std::function<void()> cb = std::bind(&Acceptor::acceptConnection, this);
     acceptChannel->setReadCallback(cb);
@@ -33,7 +28,7 @@ Acceptor::~Acceptor() {
 void Acceptor::acceptConnection() {
     InetAddress clnt_addr;
     Socket *clnt_sock = new Socket(sock->accept(clnt_addr));
-    LOG_INFO("New clint fd %d! IP: %s Port: %d\n", clnt_sock->getFd(), inet_ntoa(clnt_addr.getAddr().sin_addr), ntohs(clnt_addr.getAddr().sin_port));
+    LOG_INFO("New TCP clint fd %d! IP: %s Port: %d", clnt_sock->getFd(), inet_ntoa(clnt_addr.getAddr().sin_addr), ntohs(clnt_addr.getAddr().sin_port));
     clnt_sock->setnonblocking();
     clnt_sock->setelegentclose();
     newConnectionCallback(clnt_sock);

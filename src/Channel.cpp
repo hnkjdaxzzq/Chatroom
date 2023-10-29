@@ -15,6 +15,11 @@ Channel::~Channel() {
     }
 }
 
+void Channel::delChannel() {
+    if(inEpoll)
+        loop->delChannel(this);
+}
+
 void Channel::handleEvent() {
     if(revents & (EPOLLIN | EPOLLPRI)) {
         readcallback();
@@ -24,13 +29,17 @@ void Channel::handleEvent() {
     }
 }
 
+void Channel::update() {
+    loop->updateChannel(this);
+}
+
 void Channel::enableReading() {
-    events |= EPOLLIN | EPOLLPRI;
+    events |= EPOLLIN | EPOLLPRI ;
     loop->updateChannel(this);
 }
 
 void Channel::enableWriting() {
-    events |= EPOLLOUT;
+    events |= EPOLLOUT ;
     loop->updateChannel(this);
 }
 
@@ -65,7 +74,7 @@ void Channel::setInEpoll() {
 }
 
 void Channel::setEvents(uint32_t _ev) {
-    events |= _ev;
+    events = _ev;
 }
 
 void Channel::setRevents(uint32_t _ev) {
@@ -74,4 +83,8 @@ void Channel::setRevents(uint32_t _ev) {
 
 void Channel::setReadCallback(std::function<void()> _cb) {
     readcallback = _cb;
+}
+
+void Channel::setWriteCallback(std::function<void()> _cb) {
+    writecallback = _cb;
 }

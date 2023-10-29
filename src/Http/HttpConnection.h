@@ -18,6 +18,8 @@ public:
 
     bool init(Connection* con);
 
+    void Close();
+
     ssize_t read(int *Errno);
     ssize_t write(int *Errno);
 
@@ -26,8 +28,11 @@ public:
     bool isKeepAlive() const ;
 
     static std::atomic<int> httpConnetCount;
-private:
+
+    int ToWriteBytes();
+    
     std::unique_ptr<Connection> con_;
+private:
     HttpRequest request_;
     HttpResponse response_;
     std::string srcDir_;
