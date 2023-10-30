@@ -95,13 +95,15 @@ void HttpServer::DealRead_(HttpConnection *con) {
 void HttpServer::DealWrite_(HttpConnection *con) {
     ssize_t ret = -1;
     int Erron = 0;
-    ret = con->write(&Erron);
-    if(ret >= 0 && con->ToWriteBytes() == 0 && con->con_->isClosed()) {
-        // HttpResponse传输完成，且客户端已经关闭链接，则服务端直接关闭连接
+    
+    if(con->con_->isClosed()) {
+        // 客户端已经关闭链接，则服务端直接关闭连接
         con->Close();
         delete con;
         return;
     }
+
+    ret = con->write(&Erron);
 
     if(ret >= 0 && con->ToWriteBytes() == 0 ) {
         // HttpResponse传输完成，继续监听可读事件
