@@ -73,19 +73,20 @@ void HttpServer::DealRead_(HttpConnection *con) {
     
     if(ret < 0 && ! (Errno == EAGAIN || Errno == EWOULDBLOCK)) {
         // 读取socket内容出错，关闭客户端连接
+        LOG_ERROR("Read from client fd[%d] error", con->con_->getFd());
         con->Close();
         return;
     }
     
     Channel *chan = con->con_->getChannel();
     if(con->con_->readBuffer.ReadableBytes() > 0 && con->process() == true) {
-        // 如果读缓冲区还有数据，且请求处理完成，注册写事件
+        // 如果读缓冲区有数据，且请求处理完成，注册写事件
         chan->setEvents(EPOLLET | EPOLLOUT | EPOLLONESHOT);
         chan->update();
     }
 
     if(con->con_->readBuffer.ReadableBytes() > 0 && con->process() == false) {
-        // 如果缓冲区有数据，但是数据解析失败，则可能数据每收全，继续注册读事件
+        // 如果缓冲区有数据，但是数据解析失败，则可能数据没收全，继续注册读事件
         chan->setEvents(EPOLLET | EPOLLIN | EPOLLONESHOT | EPOLLPRI);
         chan->update();    
     }
@@ -96,7 +97,7 @@ void HttpServer::DealWrite_(HttpConnection *con) {
     ssize_t ret = -1;
     int Erron = 0;
     
-    if(con->con_->isClosed()) {
+    if(con->ToWriteBytes() == 0 && con->con_->isClosed()) {
         // 客户端已经关闭链接，则服务端直接关闭连接
         con->Close();
         delete con;
@@ -106,10 +107,17 @@ void HttpServer::DealWrite_(HttpConnection *con) {
     ret = con->write(&Erron);
 
     if(ret >= 0 && con->ToWriteBytes() == 0 ) {
-        // HttpResponse传输完成，继续监听可读事件
-        Channel *chan = con->con_->getChannel();
-        chan->setEvents(EPOLLET | EPOLLIN | EPOLLONESHOT | EPOLLPRI);
-        chan->update();    
+        // HttpResponse传输完成
+        if(con->con_->isClosed()) {
+            // 客户端已经关闭连接，服务端也关闭连接
+            con->Close();
+            delete con;
+        } else {
+            // 客户端还没关闭连接，服务端继续监听读事件
+            Channel *chan = con->con_->getChannel();
+            chan->setEvents(EPOLLET | EPOLLIN | EPOLLONESHOT | EPOLLPRI);
+            chan->update();    
+        }
         return;
     }
 

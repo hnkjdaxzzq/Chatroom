@@ -40,7 +40,7 @@ ssize_t Connection::readNonBlocking(int *Errno) {
         if (readn == 0) {
             // EOF，客户端断开连接
             // 暂时先不进行后续处理，等将http模块调通后，加入定时器
-            LOG_DEBUG("Client [%d] closed connection", sock->getFd());
+            // LOG_DEBUG("Client [%d] closed connection", sock->getFd());
             closed = true;
             return 0;
         }

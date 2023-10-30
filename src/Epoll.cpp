@@ -52,7 +52,7 @@ void Epoll::delChannel(Channel *channel) {
         return;
     
     errif(epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr) == -1, "epoll del error");
-    close(fd);
+    // close(fd);
 }
 
 void Epoll::updateChannel(Channel *channel) {
