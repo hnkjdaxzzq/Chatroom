@@ -23,7 +23,7 @@ Socket::Socket(int _fd) : fd(_fd) {
 Socket::~Socket() {
     LOG_DEBUG("fd[%d] closed", fd);
     if(fd != -1) {
-        close(fd);
+        shutdown(fd, SHUT_WR);
         fd = -1;
     }
 }

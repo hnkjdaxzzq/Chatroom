@@ -98,7 +98,7 @@ ssize_t Connection::writeNonBlocking(int *Errno) {
 
 Connection::~Connection() {
     delete channel;
-    delete sock;
+    // delete sock;
     // delete rio;
 }
 

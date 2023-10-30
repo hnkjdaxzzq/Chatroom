@@ -79,7 +79,7 @@ void HttpServer::DealRead_(HttpConnection *con) {
     
     Channel *chan = con->con_->getChannel();
     if(con->con_->readBuffer.ReadableBytes() > 0 && con->process() == true) {
-        // 如果读缓冲区还有数据，则需要注册写事件
+        // 如果读缓冲区还有数据，且请求处理完成，注册写事件
         chan->setEvents(EPOLLET | EPOLLOUT | EPOLLONESHOT);
         chan->update();
     }
@@ -96,15 +96,15 @@ void HttpServer::DealWrite_(HttpConnection *con) {
     ssize_t ret = -1;
     int Erron = 0;
     ret = con->write(&Erron);
-    if(ret >= 0 && con->ToWriteBytes() == 0 && con->isKeepAlive() == false && con->con_->isClosed()) {
-        // HttpResponse传输完成，且客户端不期待保持连接，服务端直接关闭连接
+    if(ret >= 0 && con->ToWriteBytes() == 0 && con->con_->isClosed()) {
+        // HttpResponse传输完成，且客户端已经关闭链接，则服务端直接关闭连接
         con->Close();
         delete con;
         return;
     }
 
-    if(ret >= 0 && con->ToWriteBytes() == 0 && con->isKeepAlive() && ! con->con_->isClosed()) {
-        // HttpResponse传输完成，且客户端希望保持连接，继续监听可读事件
+    if(ret >= 0 && con->ToWriteBytes() == 0 ) {
+        // HttpResponse传输完成，继续监听可读事件
         Channel *chan = con->con_->getChannel();
         chan->setEvents(EPOLLET | EPOLLIN | EPOLLONESHOT | EPOLLPRI);
         chan->update();    
@@ -163,6 +163,6 @@ void HttpServer::deleteConnection(Socket *sock) {
         HttpConnection *httpcon = users_[delfd];
         users_.erase(delfd);
         httpcon->con_->getChannel()->delChannel();
-        // delete sock;
+        delete sock;
     }
 }
