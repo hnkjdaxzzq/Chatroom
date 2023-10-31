@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include <string>
 #include "Acceptor.h"
 #include "EventLoop.h"
@@ -35,7 +36,7 @@ private:
 
     Acceptor *acceptor;
     std::unordered_map<int, HttpConnection*> users_;
-
+    std::mutex mtx_;
 
     bool init();
 };

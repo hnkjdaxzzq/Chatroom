@@ -1,7 +1,10 @@
 #include "Socket.h"
 #include "InetAddress.h"
 #include "util.h"
+#include <asm-generic/errno-base.h>
+#include <asm-generic/errno.h>
 #include <cerrno>
+#include <cstdlib>
 #include <cstring>
 #include <netinet/in.h>
 #include <netinet/tcp.h>
@@ -71,8 +74,19 @@ int Socket::accept(InetAddress& _addr) {
     socklen_t clnt_len = sizeof(clnt_addr);
     bzero(&clnt_addr, sizeof(clnt_addr));
     int clntFd = -1;
-    clntFd = ::accept(fd, (sockaddr*)&clnt_addr, &clnt_len);
-    errif(clntFd < 0, "socket accept error");
+    while (true) {
+        clntFd = ::accept(fd, (sockaddr*)&clnt_addr, &clnt_len);
+        if(clntFd > 0)
+            break;
+
+        if(clntFd < 0 && (errno == EMFILE || errno == ENFILE || errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) ) {
+            continue;
+        } else {
+            LOG_ERROR("%s ", strerror(errno));
+            exit(1);
+        } 
+    }
+    // errif(clntFd < 0, "socket accept error");
     _addr.setAddr(clnt_addr);
     _addr.setAddrlen(clnt_len);
     return clntFd;

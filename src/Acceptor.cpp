@@ -2,14 +2,21 @@
 #include "Socket.h"
 #include "InetAddress.h"
 #include "Channel.h"
+#include <asm-generic/socket.h>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <string>
 #include <Log.h>
+#include <sys/socket.h>
 
 Acceptor::Acceptor(EventLoop *_loop, uint16_t port) : loop(_loop), sock(nullptr), acceptChannel(nullptr) {
     sock = new Socket();
+    int opt = 1;
+    // 设置端口复用
+    int rs = setsockopt(sock->getFd(), SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    if(rs < 0)
+        LOG_ERROR("端口复用设置失败");
     InetAddress addr = InetAddress("0.0.0.0", port);
     sock->bind(addr);
     sock->listen();

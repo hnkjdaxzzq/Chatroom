@@ -51,19 +51,6 @@ void Log::SetLevel(int level) {
 void Log::init(int level = 1, const char *path, const char *suffix, int maxQueueSize) {
     isOpen_ = true;
     level_ = level;
-    if(maxQueueSize > 0) {
-        isAsync_ = true;
-        if(!deque_) {
-            std::unique_ptr<BlockDeque<std::string>> newDeque(new BlockDeque<std::string>);
-            deque_ = std::move(newDeque);
-
-            std::unique_ptr<std::thread> NewThread(new std::thread(FlushLogThread));
-            writeThread_ = std::move(NewThread);
-        }
-    } else {
-        isAsync_ = false;
-    }
-
     lineCount_ = 0;
 
     time_t timer = time(nullptr);
@@ -91,6 +78,20 @@ void Log::init(int level = 1, const char *path, const char *suffix, int maxQueue
         }
         assert(fp_ != nullptr);
     }   
+
+    if(maxQueueSize > 0) {
+        isAsync_ = true;
+        if(!deque_) {
+            std::unique_ptr<BlockDeque<std::string>> newDeque(new BlockDeque<std::string>);
+            deque_ = std::move(newDeque);
+
+            std::unique_ptr<std::thread> NewThread(new std::thread(FlushLogThread));
+            writeThread_ = std::move(NewThread);
+        }
+    } else {
+        isAsync_ = false;
+    }
+
 }
 
 void Log::write(int level, const char *format, ...) {
@@ -121,9 +122,11 @@ void Log::write(int level, const char *format, ...) {
         
         locker.lock();
         flush();
-        fclose(fp_);
-        fp_ = fopen(newFile, "a");
-        assert(fp_ != nullptr);
+        if(fp_ != nullptr)
+            fclose(fp_);
+        // 轮询打开日志文件
+        while ((fp_ = fopen(newFile, "a")) != nullptr) 
+            ;
     }
 
     {

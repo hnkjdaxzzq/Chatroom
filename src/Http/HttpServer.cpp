@@ -4,8 +4,10 @@
 #include <asm-generic/errno-base.h>
 #include <asm-generic/errno.h>
 #include <cstdint>
+#include <cstring>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <string>
 #include "Acceptor.h"
 #include "EventLoop.h"
@@ -48,7 +50,7 @@ bool HttpServer::init() {
 
 void HttpServer::start() {
     init();
-    Log::Instance()->init(0);
+    Log::Instance()->init(5);
     LOG_INFO("=========== HttpServer started ============");
     LOG_INFO("Port:%d", port_);
     LOG_INFO("srcDur: %s", srcDir_.c_str());
@@ -60,10 +62,15 @@ void HttpServer::start() {
 void HttpServer::DealRead_(HttpConnection *con) {
     ssize_t ret = -1;
     int Errno = 0;
+    Channel *chan = con->con_->getChannel();
     ret = con->read(&Errno);
-    if(ret == 0) { // 如果客户端断开连接，服务端也关闭连接
+
+    if(ret == 0) { // 如果客户端断开连接，注册写事件，让写事件关闭连接
         int delFd = con->con_->getFd();
         LOG_INFO("client fd: %d closed connection", delFd);
+        chan->setEvents(EPOLLET | EPOLLOUT | EPOLLONESHOT);
+        chan->update();
+        return;
         // if(con->con_->readBuffer.ReadableBytes() == 0) {
         //     con->Close();
         //     delete con;
@@ -73,42 +80,35 @@ void HttpServer::DealRead_(HttpConnection *con) {
     
     if(ret < 0 && ! (Errno == EAGAIN || Errno == EWOULDBLOCK)) {
         // 读取socket内容出错，关闭客户端连接
-        LOG_ERROR("Read from client fd[%d] error", con->con_->getFd());
-        con->Close();
-        return;
+        LOG_ERROR("Read from client fd[%d] error %s", con->con_->getFd(), strerror(Errno));
+        // con->Close();
+        // return;
     }
     
-    Channel *chan = con->con_->getChannel();
     if(con->con_->readBuffer.ReadableBytes() > 0 && con->process() == true) {
-        // 如果读缓冲区有数据，且请求处理完成，注册写事件
-        chan->setEvents(EPOLLET | EPOLLOUT | EPOLLONESHOT);
-        chan->update();
+        if(con->process() == true) {
+            // 如果读缓冲区有数据，且请求处理完成，注册写事件
+            chan->setEvents(EPOLLET | EPOLLOUT | EPOLLONESHOT);
+            chan->update();
+        } else {
+            // 如果缓冲区有数据，但是数据解析失败，则可能数据没收全，继续注册读事件
+            chan->setEvents(EPOLLET | EPOLLIN | EPOLLONESHOT | EPOLLPRI);
+            chan->update();    
+        }
     }
 
-    if(con->con_->readBuffer.ReadableBytes() > 0 && con->process() == false) {
-        // 如果缓冲区有数据，但是数据解析失败，则可能数据没收全，继续注册读事件
-        chan->setEvents(EPOLLET | EPOLLIN | EPOLLONESHOT | EPOLLPRI);
-        chan->update();    
-    }
 
 }
 
 void HttpServer::DealWrite_(HttpConnection *con) {
     ssize_t ret = -1;
-    int Erron = 0;
-    
-    if(con->ToWriteBytes() == 0 && con->con_->isClosed()) {
-        // 客户端已经关闭链接，则服务端直接关闭连接
-        con->Close();
-        delete con;
-        return;
-    }
+    int Erron = 0; 
 
     ret = con->write(&Erron);
 
-    if(ret >= 0 && con->ToWriteBytes() == 0 ) {
+    if(con->ToWriteBytes() == 0 ) {
         // HttpResponse传输完成
-        if(con->con_->isClosed()) {
+        if(con->con_->isClosed() || !con->isKeepAlive()) {
             // 客户端已经关闭连接，服务端也关闭连接
             con->Close();
             delete con;
@@ -121,19 +121,28 @@ void HttpServer::DealWrite_(HttpConnection *con) {
         return;
     }
 
-
     if(con->ToWriteBytes() != 0 && ret >= 0) {
         // 如果数据没传输完成且传输过程中没出错，继续监听可写事件
         Channel *chan = con->con_->getChannel();
         chan->setEvents(EPOLLET | EPOLLOUT | EPOLLONESHOT);
         chan->update();
+        return;
+    } 
 
-    } else if(ret < 0 && !(Erron == EAGAIN || Erron == EWOULDBLOCK) ) {
+    if(ret < 0 && !(Erron == EAGAIN || Erron == EWOULDBLOCK) ) {
         // 如果传输过程出错
         LOG_ERROR("HttpResponse send failed");
         con->Close();
         delete con;
+        return;
     }
+    
+    // if(con->ToWriteBytes() == 0 && (con->con_->isClosed() || !con->isKeepAlive()) ) {
+    //     // 客户端已经关闭链接，则服务端直接关闭连接
+    //     con->Close();
+    //     delete con;
+    //     return;
+    // }
 }
 
 void HttpServer::newConnection(Socket *sock) {
@@ -151,7 +160,11 @@ void HttpServer::newConnection(Socket *sock) {
         return;
     }
 
-    users_[sock->getFd()] = httpcon;
+    {
+        // unordered_map is not thread safe
+        std::lock_guard<std::mutex> locker(mtx_);
+        users_[sock->getFd()] = httpcon;
+    }
 
     std::function<void(Socket*)> delConCb = std::bind(&HttpServer::deleteConnection, this, std::placeholders::_1);
     httpcon->con_->setDeleteConnectionCallback(delConCb);
@@ -171,7 +184,10 @@ void HttpServer::deleteConnection(Socket *sock) {
     int delfd = sock->getFd();
     if(users_.count(delfd)) {
         HttpConnection *httpcon = users_[delfd];
-        users_.erase(delfd);
+        {
+            std::lock_guard<std::mutex> locker(mtx_);
+            users_.erase(delfd);
+        }
         httpcon->con_->getChannel()->delChannel();
         delete sock;
     }
