@@ -13,7 +13,7 @@
 #include <ThreadPool.h>
 class HttpServer {
 public:
-    HttpServer(uint16_t port, const std::string& srcDir, int threadSize = std::thread::hardware_concurrency());
+    HttpServer(uint16_t port, const std::string& srcDir, int threadSize = std::thread::hardware_concurrency(), int loglevel = 3, std::string logpath = "./log");
     void newConnection(Socket *sock);
     void deleteConnection(Socket *sock);
     void process(Connection* con);
@@ -27,6 +27,8 @@ private:
     std::string srcDir_;
     int threadSize_;
     bool isClose_;
+    std::string logPath_;
+    int loglevel_;
 
     
     

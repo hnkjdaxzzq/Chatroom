@@ -25,8 +25,9 @@ void HttpServer::process(Connection * con) {
     http_server->process(con);
 }
 
-HttpServer::HttpServer(uint16_t port, const std::string &srcDir, int threadSize ) : 
-                port_(port), srcDir_(srcDir), threadSize_(threadSize) {
+HttpServer::HttpServer(uint16_t port, const std::string &srcDir, int threadSize, int loglevel, std::string logpath ) : 
+                port_(port), srcDir_(srcDir), threadSize_(threadSize), 
+                loglevel_(loglevel), logPath_(logpath) {
 
 }
 
@@ -50,7 +51,7 @@ bool HttpServer::init() {
 
 void HttpServer::start() {
     init();
-    Log::Instance()->init(0);
+    Log::Instance()->init(loglevel_, logPath_.c_str());
     LOG_INFO("=========== HttpServer started ============");
     LOG_INFO("Port:%d", port_);
     LOG_INFO("srcDur: %s", srcDir_.c_str());
