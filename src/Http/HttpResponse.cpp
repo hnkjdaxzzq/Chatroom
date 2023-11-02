@@ -1,7 +1,12 @@
 #include "HttpResponse.h"
+#include <cerrno>
 #include <cstddef>
 #include <cstdio>
+#include <cstring>
 #include <fcntl.h>
+#include <fstream>
+#include <ios>
+#include <streambuf>
 #include <string>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -123,15 +128,38 @@ void HttpResponse::AddContent_(Buffer &buff) {
     LOG_DEBUG("AddContent() file path: %s\n", (srcDir_ + path_).c_str());
     int srcfd = open((srcDir_ + path_).c_str(), O_RDONLY);
     if(srcfd < 0) {
-        LOG_ERROR("%s: open failed\n", (srcDir_ + path_).c_str());
-        ErrorContent(buff, "File not found!");
+        LOG_ERROR("%s: open failed %s", (srcDir_ + path_).c_str(), strerror(errno));
+        buff.RetrieveAll();
+        code_ = 400;
+        AddStateLine_(buff);
+        ErrorContent(buff, "File not found, open failed");
         return;
     }
 
     auto mfile = mmap(0, mmFileStat_.st_size, PROT_READ, MAP_PRIVATE, srcfd, 0);
     if(mfile == MAP_FAILED) {
-        LOG_ERROR("%s: mmap failed\n", (srcDir_ + path_).c_str());
-        ErrorContent(buff, "File not Found!");
+        LOG_ERROR("%s: mmap failed", (srcDir_ + path_).c_str());
+        close(srcfd);
+
+        std::ifstream file_stream(srcDir_ + path_, std::ios::in);
+        if(!file_stream.is_open()) {
+            LOG_ERROR("%s: ifstream open failed", (srcDir_ + path_).c_str());
+            ErrorContent(buff, "File not Found, mmap failed");
+            return;
+        }
+
+        file_stream.seekg(0, std::ios::end);
+        std::streampos file_size = file_stream.tellg();
+        file_stream.seekg(0, std::ios::beg);
+
+        string fileContent;
+        fileContent.resize(file_size);
+
+        file_stream.read(&fileContent[0], file_size);
+        buff.Append("Content-length: " + std::to_string(file_size) + "\r\n\r\n");
+        buff.Append(fileContent);
+
+        file_stream.close();
         return;
     }
     mmFile_ = (char*) mfile;

@@ -65,8 +65,8 @@ void Epoll::updateChannel(Channel *channel) {
         {
             std::lock_guard<std::mutex> locker(mutx_);
             errif(epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &ev) == -1, "epoll add error");
+            channel->setInEpoll();
         }
-        channel->setInEpoll();
     } else {
         std::lock_guard<std::mutex> locker(mutx_);
         errif(epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &ev) == -1, "epoll modify error");

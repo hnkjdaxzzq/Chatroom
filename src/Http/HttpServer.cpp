@@ -50,7 +50,7 @@ bool HttpServer::init() {
 
 void HttpServer::start() {
     init();
-    Log::Instance()->init(5);
+    Log::Instance()->init(0);
     LOG_INFO("=========== HttpServer started ============");
     LOG_INFO("Port:%d", port_);
     LOG_INFO("srcDur: %s", srcDir_.c_str());
@@ -81,11 +81,11 @@ void HttpServer::DealRead_(HttpConnection *con) {
     if(ret < 0 && ! (Errno == EAGAIN || Errno == EWOULDBLOCK)) {
         // 读取socket内容出错，关闭客户端连接
         LOG_ERROR("Read from client fd[%d] error %s", con->con_->getFd(), strerror(Errno));
-        // con->Close();
-        // return;
+        con->Close();
+        return;
     }
     
-    if(con->con_->readBuffer.ReadableBytes() > 0 && con->process() == true) {
+    if(con->con_->readBuffer.ReadableBytes() > 0) {
         if(con->process() == true) {
             // 如果读缓冲区有数据，且请求处理完成，注册写事件
             chan->setEvents(EPOLLET | EPOLLOUT | EPOLLONESHOT);
@@ -104,7 +104,8 @@ void HttpServer::DealWrite_(HttpConnection *con) {
     ssize_t ret = -1;
     int Erron = 0; 
 
-    ret = con->write(&Erron);
+    if(con->ToWriteBytes() != 0)
+        ret = con->write(&Erron);
 
     if(con->ToWriteBytes() == 0 ) {
         // HttpResponse传输完成
@@ -182,13 +183,12 @@ void HttpServer::newConnection(Socket *sock) {
 
 void HttpServer::deleteConnection(Socket *sock) {
     int delfd = sock->getFd();
-    if(users_.count(delfd)) {
-        HttpConnection *httpcon = users_[delfd];
-        {
-            std::lock_guard<std::mutex> locker(mtx_);
-            users_.erase(delfd);
-        }
-        httpcon->con_->getChannel()->delChannel();
-        delete sock;
+    HttpConnection *httpcon = nullptr;
+    {
+        std::lock_guard<std::mutex> locker(mtx_);
+        httpcon = users_[delfd];
+        users_.erase(delfd);
     }
+    httpcon->con_->getChannel()->delChannel();
+    delete sock;
 }

@@ -155,6 +155,8 @@ ssize_t Buffer::ReadFd(int fd, int *Errno) {
 
 ssize_t Buffer::WriteFd(int fd, int *Errno) {
     size_t readSize = ReadableBytes();
+    if(readSize == 0)
+        return 0;
     ssize_t len = write(fd, Peek(), readSize);
     if(len < 0) {
         *Errno = errno;

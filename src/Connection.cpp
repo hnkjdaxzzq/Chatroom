@@ -52,7 +52,10 @@ ssize_t Connection::readNonBlocking(int *Errno) {
             // 读取数据完成
             if(readBytes != 0)
                 break;
+            else
+                return 1;
         } else if( readn < 0) {
+            LOG_ERROR("read fd[%d] error, %s", sock->getFd(), strerror(*Errno));
             return readn;
         }
     }

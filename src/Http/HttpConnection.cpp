@@ -71,6 +71,7 @@ bool HttpConnection::process() {
     // 添加请求文件
     if(response_.FileLen() > 0 && response_.File()) {
         con_->writeBuffer.Append(response_.File(), response_.FileLen());
+        response_.UnmapFile();
     }
     LOG_DEBUG("filesize: %d", con_->writeBuffer.ReadableBytes());
     
