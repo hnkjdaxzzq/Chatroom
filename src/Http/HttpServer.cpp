@@ -68,7 +68,7 @@ void HttpServer::DealRead_(HttpConnection *con) {
 
     if(ret == 0) { // 如果客户端断开连接，注册写事件，让写事件关闭连接
         int delFd = con->con_->getFd();
-        LOG_INFO("client fd: %d closed connection", delFd);
+        LOG_DEBUG("client fd: %d closed connection", delFd);
         chan->setEvents(EPOLLET | EPOLLOUT | EPOLLONESHOT);
         chan->update();
         return;
@@ -81,8 +81,9 @@ void HttpServer::DealRead_(HttpConnection *con) {
     
     if(ret < 0 && ! (Errno == EAGAIN || Errno == EWOULDBLOCK)) {
         // 读取socket内容出错，关闭客户端连接
-        LOG_ERROR("Read from client fd[%d] error %s", con->con_->getFd(), strerror(Errno));
+        LOG_ERROR("Read from client fd[%d] error %s fd closed!", con->con_->getFd(), strerror(Errno));
         con->Close();
+        delete con;
         return;
     }
     
@@ -112,6 +113,7 @@ void HttpServer::DealWrite_(HttpConnection *con) {
         // HttpResponse传输完成
         if(con->con_->isClosed() || !con->isKeepAlive()) {
             // 客户端已经关闭连接，服务端也关闭连接
+            LOG_DEBUG("request fd[%d] not keepAlive or Closed", con->con_->getFd());
             con->Close();
             delete con;
         } else {
