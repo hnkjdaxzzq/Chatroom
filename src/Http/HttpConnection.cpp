@@ -36,7 +36,7 @@ bool HttpConnection::init(Connection *con) {
     con_->writeBuffer.RetrieveAll();
     // 如果要打印新连接的用户数，会造成线程不安全，需要引入同步机制。
     // 但是在此处加锁会引起http连接对锁的争用，因此在此处不打印新连接的用户数
-    LOG_INFO("Http Clinet[%d] in", con_->getFd()) ;    
+    LOG_DEBUG("Http Clinet[%d] in", con_->getFd()) ;    
     return true;
 }
 
